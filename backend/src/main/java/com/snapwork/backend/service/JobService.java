@@ -1,0 +1,191 @@
+package com.snapwork.backend.service;
+
+import com.snapwork.backend.dto.JobRequest;
+import com.snapwork.backend.dto.CustomFieldDTO; // <-- BU IMPORT EKLENDİ
+import com.snapwork.backend.entity.*;
+import com.snapwork.backend.enums.JobStatus;
+import com.snapwork.backend.repository.*;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class JobService {
+
+    private final JobRepository jobRepository;
+    private final EmployerProfileRepository employerProfileRepository;
+    private final UserRepository userRepository;
+    private final CustomFieldRepository customFieldRepository;
+
+    private final WorkerProfileRepository workerProfileRepository;
+    private final ApplicationRepository applicationRepository;
+    private final NotificationService notificationService;
+
+    public JobService(JobRepository jobRepository,
+                      EmployerProfileRepository employerProfileRepository,
+                      UserRepository userRepository,
+                      CustomFieldRepository customFieldRepository,
+                      WorkerProfileRepository workerProfileRepository,
+                      ApplicationRepository applicationRepository,
+                      NotificationService notificationService) {
+        this.jobRepository = jobRepository;
+        this.employerProfileRepository = employerProfileRepository;
+        this.userRepository = userRepository;
+        this.customFieldRepository = customFieldRepository;
+        this.workerProfileRepository = workerProfileRepository;
+        this.applicationRepository = applicationRepository;
+        this.notificationService = notificationService;
+    }
+
+    // 1. CREATE JOB
+    public Job createJob(JobRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        EmployerProfile employer = employerProfileRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Error: You must create an Employer Profile first!"));
+
+        Job job = new Job();
+        job.setEmployer(employer);
+        job.setTitle(request.getTitle());
+        job.setDescription(request.getDescription());
+        job.setPaymentAmount(request.getPaymentAmount());
+        job.setPaymentType(request.getPaymentType());
+        job.setWorkDate(request.getWorkDate());
+        job.setStartTime(request.getStartTime());
+        job.setEndTime(request.getEndTime());
+        job.setCity(request.getCity());
+        job.setDistrict(request.getDistrict());
+        job.setStreetAndBuilding(request.getStreetAndBuilding());
+
+        Job savedJob = jobRepository.save(job);
+
+        // Save Custom Fields if they exist
+        if (request.getCustomFields() != null) {
+            for (CustomFieldDTO fieldDTO : request.getCustomFields()) {
+                CustomField field = new CustomField();
+                field.setJob(savedJob);
+                field.setQuestion(fieldDTO.getQuestion());
+                field.setFieldType(fieldDTO.getFieldType());
+                field.setOptions(fieldDTO.getOptions());
+                field.setRequired(fieldDTO.isRequired());
+                customFieldRepository.save(field);
+            }
+        }
+        return savedJob;
+    }
+
+    // 2. LIST ALL JOBS
+    public List<Job> getAllJobs() {
+        return jobRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    // 3. GET JOBS BY USER
+    public List<Job> getJobsByUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        EmployerProfile employer = employerProfileRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("This user has no employer profile yet."));
+
+        return jobRepository.findByEmployer(employer);
+    }
+
+    // 4. DELETE JOB
+    public void deleteJob(Long jobId, Long userId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found!"));
+
+        if (!job.getEmployer().getUser().getUserId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to delete this job!");
+        }
+        jobRepository.delete(job);
+    }
+
+    // 5. GET JOB BY ID
+    public Job getJobById(Long jobId) {
+        return jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found!"));
+    }
+
+    // 6. UPDATE JOB
+    public Job updateJob(Long jobId, JobRequest request) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found!"));
+
+        if (!job.getEmployer().getUser().getUserId().equals(request.getUserId())) {
+            throw new RuntimeException("You are not authorized to update this job!");
+        }
+
+        job.setTitle(request.getTitle());
+        job.setDescription(request.getDescription());
+        job.setPaymentAmount(request.getPaymentAmount());
+        job.setPaymentType(request.getPaymentType());
+        job.setWorkDate(request.getWorkDate());
+        job.setStartTime(request.getStartTime());
+        job.setEndTime(request.getEndTime());
+        job.setCity(request.getCity());
+        job.setDistrict(request.getDistrict());
+        job.setStreetAndBuilding(request.getStreetAndBuilding());
+
+        return jobRepository.save(job);
+    }
+
+    // 7. MARK JOB AS COMPLETED
+    public void completeJob(Long jobId, Long userId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found!"));
+
+        if (!job.getEmployer().getUser().getUserId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to complete this job!");
+        }
+
+        job.setStatus(JobStatus.COMPLETED);
+        jobRepository.save(job);
+
+        List<Application> apps = applicationRepository.findByJob(job);
+        for (Application app : apps) {
+            if ("ACCEPTED".equals(app.getStatus())) {
+                String msg = "Job '" + job.getTitle() + "' is marked as COMPLETED. Please rate your employer!";
+                Long workerId = app.getWorker().getUser().getUserId();
+                String url = "/completed-jobs";
+                notificationService.sendNotification(workerId, msg, url);
+            }
+        }
+    }
+
+    // 8. GET COMPLETED JOBS
+    public List<Job> getCompletedJobs(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        List<Job> completedJobs = new ArrayList<>();
+
+        Optional<EmployerProfile> employer = employerProfileRepository.findByUser(user);
+        if (employer.isPresent()) {
+            List<Job> employerJobs = jobRepository.findCompletedJobs(employer.get());
+            completedJobs.addAll(employerJobs);
+        }
+
+        Optional<WorkerProfile> worker = workerProfileRepository.findByUser(user);
+        if (worker.isPresent()) {
+            List<Application> applications = applicationRepository.findByWorker(worker.get());
+            for (Application app : applications) {
+                if ("ACCEPTED".equals(app.getStatus()) && app.getJob().getStatus() == JobStatus.COMPLETED) {
+                    completedJobs.add(app.getJob());
+                }
+            }
+        }
+
+        return completedJobs;
+    }
+
+    // 9. GET QUESTIONS FOR A JOB
+    public List<CustomField> getJobQuestions(Long jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found!"));
+        return customFieldRepository.findByJob(job);
+    }
+}

@@ -1,0 +1,10 @@
+### STEP 6: Create Worker Profile (Become a Worker)
+POST http://localhost:8080/api/worker/create
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "bio": "Experienced Java Developer looking for part-time gigs.",
+  "phone": "555-999-8877",
+  "city": "Izmir"
+}
