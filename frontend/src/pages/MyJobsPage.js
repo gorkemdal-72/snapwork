@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import JobService from "../services/JobService";
 
-const JobDashboardCard = ({ job, onDelete, onComplete }) => {
+const JobDashboardCard = ({ job, onDelete, onComplete, onCancel }) => {
     const navigate = useNavigate();
     const [applicantCount, setApplicantCount] = useState(0);
 
@@ -41,6 +41,15 @@ const JobDashboardCard = ({ job, onDelete, onComplete }) => {
                     ✏️ Edit
                 </button>
 
+                {job.status === 'OPEN' && (
+                    <button
+                        onClick={() => onCancel(job.jobId)}
+                        style={{ padding: "8px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
+                    >
+                        🚫 Cancel
+                    </button>
+                )}
+
                 <button onClick={() => onDelete(job.jobId)} style={{ padding: "8px 15px", backgroundColor: "#f8d7da", color: "#721c24", border: "1px solid #f5c6cb", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
                     🗑️ Delete
                 </button>
@@ -52,6 +61,7 @@ const JobDashboardCard = ({ job, onDelete, onComplete }) => {
                 >
                     ✅ Complete
                 </button>
+                {job.status === 'CANCELLED' && <span style={{color: 'red', fontWeight: 'bold'}}>CANCELLED</span>}
             </div>
         </div>
     );
@@ -103,6 +113,17 @@ const MyJobsPage = () => {
         }
     }
 
+    const handleCancel = (jobId) => {
+        if (window.confirm("Are you sure you want to CANCEL this job? Applicants will be notified.")) {
+            JobService.cancelJob(jobId, user.userId)
+                .then(() => {
+                    alert("Job Cancelled!");
+                    setJobs(jobs.map(j => j.jobId === jobId ? { ...j, status: 'CANCELLED' } : j));
+                })
+                .catch(err => alert("Error: " + err.message));
+        }
+    };
+
     if (loading) return <div style={{textAlign:"center", marginTop: 50}}>Loading Dashboard...</div>;
 
     return (
@@ -124,7 +145,8 @@ const MyJobsPage = () => {
                             key={job.jobId}
                             job={job}
                             onDelete={handleDelete}
-                            onComplete={handleComplete} // <-- Pass Function
+                            onComplete={handleComplete}
+                            onCancel={handleCancel}
                         />
                     ))}
                 </div>

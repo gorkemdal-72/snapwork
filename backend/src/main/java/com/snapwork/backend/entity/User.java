@@ -40,7 +40,6 @@ public class User {
 
     @Column(name = "gender")
     private String gender;
-    // ------------------
 
     @CreationTimestamp
     @Column(name = "date_registered", updatable = false)

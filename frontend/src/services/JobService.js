@@ -107,6 +107,13 @@ const updateReview = (reviewId, reviewData) => {
     return axios.put(REVIEW_URL + "/" + reviewId, reviewData);
 };
 
+// 20. Cancel Job
+const cancelJob = (jobId, userId) => {
+    return axios.put(API_URL + "/" + jobId + "/cancel", null, {
+        params: { userId }
+    });
+};
+
 
 const JobService = {
     getAllJobs,
@@ -127,7 +134,8 @@ const JobService = {
     createReview,
     getUserReviews,
     getMyReview,
-    updateReview
+    updateReview,
+    cancelJob,
 };
 
 export default JobService;

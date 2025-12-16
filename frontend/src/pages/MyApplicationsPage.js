@@ -22,16 +22,36 @@ const MyApplicationsPage = () => {
     }, []);
 
     // Helper function for status colors
-    const getStatusBadge = (status) => {
+    const getStatusBadge = (appStatus, jobStatus) => {
+
+        if (jobStatus === 'CANCELLED') {
+            return (
+                <span style={{
+                    backgroundColor: "#6c757d", // Gri/Füme renk
+                    color: "white",
+                    padding: "5px 10px",
+                    borderRadius: "15px",
+                    fontWeight: "bold",
+                    fontSize: "0.8rem",
+                    border: "1px solid #555"
+                }}>
+                    🚫 JOB CANCELLED
+                </span>
+            );
+        }
         let color = "#ffc107"; // Pending (Yellow)
         let text = "⏳ PENDING";
 
-        if (status === "ACCEPTED") {
+        if (appStatus === "ACCEPTED") {
             color = "#28a745"; // Green
             text = "✅ ACCEPTED";
-        } else if (status === "REJECTED") {
+        } else if (appStatus === "REJECTED") {
             color = "#dc3545"; // Red
             text = "❌ REJECTED";
+        }
+        else if (appStatus === "CANCELED") {
+            color = "#dc3545"; // Red
+            text = " CANCELED";
         }
 
         return (
@@ -77,7 +97,7 @@ const MyApplicationsPage = () => {
                             </div>
 
                             <div>
-                                {getStatusBadge(app.status)}
+                                {getStatusBadge(app.status, app.job.status)}
                             </div>
                         </div>
                     ))}

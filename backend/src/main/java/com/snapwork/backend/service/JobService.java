@@ -188,4 +188,28 @@ public class JobService {
                 .orElseThrow(() -> new RuntimeException("Job not found!"));
         return customFieldRepository.findByJob(job);
     }
+
+    // 10. CANCEL JOB
+    public void cancelJob(Long jobId, Long userId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found!"));
+
+        if (!job.getEmployer().getUser().getUserId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to cancel this job!");
+        }
+
+        if (job.getStatus() == JobStatus.COMPLETED || job.getStatus() == JobStatus.CANCELLED) {
+            throw new RuntimeException("Job is already completed or cancelled!");
+        }
+
+        job.setStatus(JobStatus.CANCELLED);
+        jobRepository.save(job);
+
+        // send notification all applicants
+        List<Application> applications = applicationRepository.findByJob(job);
+        for (Application app : applications) {
+            String msg = "Job '" + job.getTitle() + "' has been cancelled by the employer.";
+            notificationService.sendNotification(app.getWorker().getUser().getUserId(), msg, "/my-applications");
+        }
+    }
 }

@@ -117,4 +117,16 @@ public class JobController {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
+
+    // 10. CANCEL JOB
+    // PUT http://localhost:8080/api/jobs/{jobId}/cancel
+    @PutMapping("/{jobId}/cancel")
+    public ResponseEntity<?> cancelJob(@PathVariable Long jobId, @RequestParam Long userId) {
+        try {
+            jobService.cancelJob(jobId, userId);
+            return ResponseEntity.ok("Job has been cancelled successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
 }
