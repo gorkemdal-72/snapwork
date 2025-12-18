@@ -19,7 +19,7 @@ public class NotificationService {
         this.userRepository = userRepository;
     }
 
-    // 1. SEND NOTIFICATION (To be used by other services)
+    // 1. SEND NOTIFICATION
     public void sendNotification(Long userId, String message, String targetUrl) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found for notification"));
@@ -28,10 +28,9 @@ public class NotificationService {
         notification.setUser(user);
         notification.setMessage(message);
         notification.setTargetUrl(targetUrl);
-        notification.setRead(false); // Default is unread
+        notification.setRead(false);
 
         notificationRepository.save(notification);
-        System.out.println(">>> NOTIFICATION SENT to User " + userId + ": " + message);
     }
 
     // 2. GET MY NOTIFICATIONS
@@ -48,12 +47,26 @@ public class NotificationService {
         return notificationRepository.countByUserAndIsReadFalse(user);
     }
 
-    // 4. MARK AS READ
+    // 4. MARK AS READ (Single)
     public void markAsRead(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
         notification.setRead(true);
         notificationRepository.save(notification);
+    }
+
+    // 5. MARK ALL AS READ
+    public void markAllAsRead(Long userId) {
+        // Fetch all unread notifications for this user
+        List<Notification> unreadNotifications = notificationRepository.findAllByUser_UserIdAndIsReadFalse(userId);
+
+        if (!unreadNotifications.isEmpty()) {
+            for (Notification notification : unreadNotifications) {
+                notification.setRead(true);
+            }
+            // Save all changes to database
+            notificationRepository.saveAll(unreadNotifications);
+        }
     }
 }

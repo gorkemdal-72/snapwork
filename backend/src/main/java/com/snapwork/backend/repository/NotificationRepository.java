@@ -10,9 +10,13 @@ import java.util.List;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-    // Get all notifications for a user, sorted by newest first
     List<Notification> findByUserOrderByCreatedAtDesc(User user);
 
-    // Count unread notifications (For the red badge icon)
     long countByUserAndIsReadFalse(User user);
+
+    // SQL Query yerine bu metodu kullanacağız.
+    // Spring Data JPA bunu otomatik olarak anlar:
+    // "Bana bu kullanıcının ID'sine sahip ve isRead=false olanları getir"
+    List<Notification> findAllByUser_UserIdAndIsReadFalse(Long userId);
+
 }

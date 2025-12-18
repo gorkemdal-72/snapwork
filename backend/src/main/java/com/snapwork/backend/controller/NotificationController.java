@@ -15,19 +15,19 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
-    // GET List: http://localhost:8080/api/notifications/user/5
+    // GET List
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getMyNotifications(@PathVariable Long userId) {
         return ResponseEntity.ok(notificationService.getMyNotifications(userId));
     }
 
-    // GET Count: http://localhost:8080/api/notifications/user/5/count
+    // GET Count
     @GetMapping("/user/{userId}/count")
     public ResponseEntity<?> getUnreadCount(@PathVariable Long userId) {
         return ResponseEntity.ok(notificationService.getUnreadCount(userId));
     }
 
-    // PUT Mark Read: http://localhost:8080/api/notifications/10/read
+    // PUT Mark Single Notification as Read
     @PutMapping("/{notificationId}/read")
     public ResponseEntity<?> markAsRead(@PathVariable Long notificationId) {
         try {
@@ -36,5 +36,12 @@ public class NotificationController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    // PUT Mark All as Read
+    @PutMapping("/read-all/{userId}")
+    public ResponseEntity<String> markAllAsRead(@PathVariable Long userId) {
+        notificationService.markAllAsRead(userId);
+        return ResponseEntity.ok("All notifications marked as read.");
     }
 }
