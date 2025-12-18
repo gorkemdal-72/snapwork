@@ -8,8 +8,9 @@ public class CreateWorkerRequest {
     private Long userId;
 
     // User Table Fields (Editable)
-    private String fullName;
-    private String phoneNumber; // Phone is usually in User table now
+    private String firstName;
+    private String lastName;
+    private String phoneNumber;
     private LocalDate birthDate;
     private String gender;
     private String city;

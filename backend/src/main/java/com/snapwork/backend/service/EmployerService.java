@@ -45,7 +45,8 @@ public class EmployerService {
                 .orElseThrow(() -> new RuntimeException("Profile not found!"));
 
         // 1. UPDATE USER TABLE INFO
-        if (request.getFullName() != null) user.setFullName(request.getFullName());
+        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null) user.setLastName(request.getLastName());
         if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
         if (request.getCity() != null) user.setCity(request.getCity());
         if (request.getBirthDate() != null) user.setBirthDate(request.getBirthDate());

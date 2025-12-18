@@ -1,5 +1,6 @@
 package com.snapwork.backend.service;
 
+import com.snapwork.backend.dto.ApplyJobRequest;
 import com.snapwork.backend.dto.JobRequest;
 import com.snapwork.backend.dto.CustomFieldDTO; // <-- BU IMPORT EKLENDİ
 import com.snapwork.backend.entity.*;
@@ -211,5 +212,55 @@ public class JobService {
             String msg = "Job '" + job.getTitle() + "' has been cancelled by the employer.";
             notificationService.sendNotification(app.getWorker().getUser().getUserId(), msg, "/my-applications");
         }
+    }
+
+    // 11. APPLY FOR JOB
+    public void applyForJob(ApplyJobRequest request) {
+        // 1. Find Job
+        Job job = jobRepository.findById(request.getJobId())
+                .orElseThrow(() -> new RuntimeException("Job not found!"));
+
+        // 2. Find User
+        User user = userRepository.findById(request.getWorkerId())
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        // 3. Find Worker Profile
+        WorkerProfile worker = workerProfileRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("You must create a Worker Profile before applying!"));
+
+        // 4. Check if already applied
+        boolean alreadyApplied = applicationRepository.existsByJobAndWorker(job, worker);
+        if (alreadyApplied) {
+            throw new RuntimeException("You have already applied for this job!");
+        }
+
+        // 5. Check if employer is applying to own job
+        if (job.getEmployer().getUser().getUserId().equals(request.getWorkerId())) {
+            throw new RuntimeException("You cannot apply to your own job!");
+        }
+
+        // 6. Create Application
+        Application app = new Application();
+        app.setJob(job);
+        app.setWorker(worker);
+        app.setStatus("PENDING");
+        app.setCoverLetter(request.getCoverLetter());
+
+        // Set Proposed Price (If provided)
+        app.setProposedPrice(request.getProposedPrice());
+
+        applicationRepository.save(app);
+
+        // 7. Send Notification to Employer
+        String msg = "New application for '" + job.getTitle() + "': " + user.getFirstName() + " " + user.getLastName();
+        if (request.getProposedPrice() != null) {
+            msg += " (Offer: " + request.getProposedPrice() + " TL)";
+        }
+
+        notificationService.sendNotification(
+                job.getEmployer().getUser().getUserId(),
+                msg,
+                "/job-applications/" + job.getJobId()
+        );
     }
 }

@@ -13,7 +13,8 @@ const RegisterPage = () => {
     const [errorMsg, setErrorMsg] = useState("");
 
     const [formData, setFormData] = useState({
-        fullName: "",
+        firstName: "",
+        lastName: "",
         email: "",
         password: "",
         phoneNumber: "",
@@ -81,22 +82,33 @@ const RegisterPage = () => {
 
                     {/* COMMON FIELDS */}
                     <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px"}}>
-                        <div className="form-group">
-                            <label>Full Name</label>
-                            <input type="text" name="fullName" className="form-control" onChange={handleChange} required />
+                        <div className="form-group" style={{flex: 1}}>
+                            <label>First Name</label>
+                            <input
+                                type="text" name="firstName" className="form-control"
+                                onChange={handleChange} required
+                            />
+                        </div>
+                        <div className="form-group" style={{flex: 1}}>
+                            <label>Last Name</label>
+                            <input
+                                type="text" name="lastName" className="form-control"
+                                onChange={handleChange} required
+                            />
                         </div>
                         <div className="form-group">
                             <label>City</label>
-                            <input type="text" name="city" className="form-control" onChange={handleChange} required />
+                            <input type="text" name="city" className="form-control" onChange={handleChange} required/>
                         </div>
                     </div>
 
                     <div className="form-group"><label>Email Address</label>
-                        <input type="email" name="email" className="form-control" onChange={handleChange} required />
+                        <input type="email" name="email" className="form-control" onChange={handleChange} required/>
                     </div>
 
                     <div className="form-group"><label>Password</label>
-                        <input type="password" name="password" className="form-control" onChange={handleChange} required />
+                        <input type="password" name="password" className="form-control" onChange={handleChange}
+                               required/>
                     </div>
 
                     <div className="form-group"><label>Phone Number</label>

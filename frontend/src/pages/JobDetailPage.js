@@ -12,6 +12,10 @@ const JobDetailPage = () => {
     // Application Form State
     const [showForm, setShowForm] = useState(false);
     const [coverLetter, setCoverLetter] = useState("");
+
+    // Proposed Price State
+    const [proposedPrice, setProposedPrice] = useState("");
+
     const [answers, setAnswers] = useState({}); // { questionId: "Answer" }
 
     const user = JSON.parse(localStorage.getItem("user"));
@@ -30,7 +34,6 @@ const JobDetailPage = () => {
 
     const handleApplyClick = () => {
         if (!user) { navigate("/login"); return; }
-        // Show the application form
         setShowForm(true);
     };
 
@@ -41,19 +44,23 @@ const JobDetailPage = () => {
     const submitApplication = (e) => {
         e.preventDefault();
 
-        // Convert answers map to list for Backend
-        const responseList = Object.keys(answers).map(fieldId => ({
-            fieldId: fieldId,
-            responseValue: answers[fieldId]
-        }));
+        // Prepare data for the DTO
+        const applyData = {
+            workerId: user.userId,
+            jobId: parseInt(jobId),
+            coverLetter: coverLetter,
+            // If empty send null, otherwise parse to float
+            proposedPrice: proposedPrice ? parseFloat(proposedPrice) : null
+        };
 
-        JobService.applyJob(user.userId, jobId, coverLetter, responseList)
+        JobService.applyForJob(applyData)
             .then(() => {
                 alert("Application Sent Successfully! 🚀");
                 navigate("/");
             })
             .catch(err => {
-                alert("Error: " + (err.response?.data || err.message));
+                const errorMsg = err.response?.data?.message || err.response?.data || err.message;
+                alert("Error: " + errorMsg);
             });
     };
 
@@ -67,11 +74,11 @@ const JobDetailPage = () => {
             {/* JOB DETAILS */}
             <h1 style={{ color: "#333", marginTop: 0 }}>{job.title}</h1>
             <h3 style={{ color: "#666", fontWeight: "normal" }}>at {job.employer.companyName}</h3>
-            <p style={{ color: "#555" }}>📍 {job.city}, {job.district} | 💰 {job.paymentAmount} ₺</p>
+            <p style={{ color: "#555" }}>📍 {job.city}, {job.district} | 💰 <span style={{fontWeight:"bold", color:"#28a745"}}>{job.paymentAmount} ₺</span></p>
             <hr/>
             <p>{job.description}</p>
 
-            {/* --- APPLICATION FORM SECTION --- */}
+            {/* APPLICATION FORM SECTION */}
             {!showForm ? (
                 <button onClick={handleApplyClick} style={{ padding: "12px 25px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "5px", fontSize: "1.1rem", fontWeight: "bold", cursor: "pointer", marginTop: 20 }}>
                     Apply Now
@@ -89,12 +96,28 @@ const JobDetailPage = () => {
                                 value={coverLetter}
                                 onChange={(e) => setCoverLetter(e.target.value)}
                                 rows="4"
-                                style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+                                style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "5px", border: "1px solid #ccc" }}
                                 required
+                                placeholder="I am fit for this job because..."
                             />
                         </div>
 
-                        {/* 2. Dynamic Questions (If any) */}
+                        {/* 2. Proposed Price Field */}
+                        <div style={{ marginBottom: "15px" }}>
+                            <label style={{ fontWeight: "bold", display: "block" }}>Proposed Price (Optional)</label>
+                            <input
+                                type="number"
+                                value={proposedPrice}
+                                onChange={(e) => setProposedPrice(e.target.value)}
+                                placeholder={`Original Offer: ${job.paymentAmount} ₺`}
+                                style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "5px", border: "1px solid #ccc" }}
+                            />
+                            <small style={{ color: "#666", marginTop: "5px", display: "block" }}>
+                                * Leave empty if you accept the original price ({job.paymentAmount} ₺).
+                            </small>
+                        </div>
+
+                        {/* 3. Dynamic Questions (If any) */}
                         {questions.length > 0 && (
                             <div style={{ marginBottom: "15px" }}>
                                 <h4 style={{ color: "#007bff" }}>Additional Questions</h4>
@@ -105,14 +128,14 @@ const JobDetailPage = () => {
                                             type={q.fieldType === "NUMBER" ? "number" : "text"}
                                             onChange={(e) => handleAnswerChange(q.fieldId, e.target.value)}
                                             required={q.required}
-                                            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+                                            style={{ width: "100%", padding: "8px", marginTop: "5px", borderRadius: "5px", border: "1px solid #ccc" }}
                                         />
                                     </div>
                                 ))}
                             </div>
                         )}
 
-                        <div style={{ display: "flex", gap: "10px" }}>
+                        <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
                             <button type="submit" style={{ flex: 1, padding: "10px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "5px", fontWeight: "bold", cursor: "pointer" }}>
                                 Submit Application
                             </button>

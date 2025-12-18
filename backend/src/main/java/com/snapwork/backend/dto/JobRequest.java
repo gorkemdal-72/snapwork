@@ -2,6 +2,7 @@ package com.snapwork.backend.dto;
 
 import com.snapwork.backend.enums.PaymentType;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -17,8 +18,13 @@ public class JobRequest {
     private PaymentType paymentType; // ENUM: HOURLY, DAILY, TOTAL
 
     // --- Time Info ---
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate workDate;
+
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime startTime;
+
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
 
     // --- Location Info ---

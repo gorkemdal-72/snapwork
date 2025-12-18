@@ -35,7 +35,8 @@ public class AuthService {
 
         // Create Base User
         User newUser = new User();
-        newUser.setFullName(request.getFullName());
+        newUser.setFirstName(request.getFirstName());
+        newUser.setLastName(request.getLastName());
         newUser.setEmail(request.getEmail());
         newUser.setPasswordHash(request.getPassword());
         newUser.setPhoneNumber(request.getPhoneNumber());
@@ -55,7 +56,7 @@ public class AuthService {
         if ("employer".equalsIgnoreCase(role)) {
             EmployerProfile employer = new EmployerProfile();
             employer.setUser(savedUser);
-            employer.setCompanyName(request.getCompanyName() != null ? request.getCompanyName() : savedUser.getFullName() + "'s Company");
+            employer.setCompanyName(request.getCompanyName() != null ? request.getCompanyName() : savedUser.getLastName() + "'s Company");
             employer.setCity(request.getCity());
             employer.setPhone(request.getPhoneNumber());
             employerRepository.save(employer);

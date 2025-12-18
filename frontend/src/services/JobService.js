@@ -3,7 +3,7 @@ import axios from "axios";
 // Port numaran 8080 ise bunu kullan, 8081 ise değiştir.
 const API_URL = "http://localhost:8080/api/jobs";
 const APP_URL = "http://localhost:8080/api/applications";
-const REVIEW_URL = "http://localhost:8080/api/reviews"; // NEW
+const REVIEW_URL = "http://localhost:8080/api/reviews";
 
 // 1. Get All Jobs
 const getAllJobs = () => {
@@ -35,14 +35,11 @@ const updateJob = (jobId, jobData) => {
     return axios.put(API_URL + "/" + jobId, jobData);
 };
 
-// 7. Apply for Job (Worker)
-const applyJob = (userId, jobId, coverLetter, responses) => {
-    return axios.post(APP_URL + "/apply", {
-        userId,
-        jobId,
-        coverLetter,
-        responses
-    });
+// 7. APPLY FOR JOB (UPDATED WITH PROPOSED PRICE)
+// applyData object format: { workerId, jobId, coverLetter, proposedPrice }
+const applyForJob = (applyData) => {
+    // Backend'de JobController içindeki /apply endpointine gider
+    return axios.post(API_URL + "/apply", applyData);
 };
 
 // 8. Get Application Count
@@ -87,7 +84,7 @@ const getApplicationDetails = (applicationId) => {
     return axios.get(`${APP_URL}/${applicationId}/details`);
 };
 
-// 16. CREATE REVIEW ( Use ReviewService logic here if you want to keep single file)
+// 16. CREATE REVIEW
 const createReview = (reviewData) => {
     return axios.post(REVIEW_URL + "/create", reviewData);
 };
@@ -114,7 +111,6 @@ const cancelJob = (jobId, userId) => {
     });
 };
 
-
 const JobService = {
     getAllJobs,
     createJob,
@@ -122,7 +118,7 @@ const JobService = {
     deleteJob,
     getJobById,
     updateJob,
-    applyJob,
+    applyForJob,
     getApplicationCount,
     getJobApplications,
     getMyApplications,

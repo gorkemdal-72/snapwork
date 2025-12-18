@@ -37,26 +37,35 @@ const ProfilePage = () => {
         }}>
 
             {/* 1. USER HEADER */}
-            <div style={{ marginBottom: "30px" }}>
+            <div style={{marginBottom: "30px"}}>
                 <div style={{
                     width: "80px", height: "80px", backgroundColor: "#007bff", color: "white",
                     borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: "2rem", fontWeight: "bold", margin: "0 auto 15px auto"
                 }}>
-                    {profileData.user.fullName.charAt(0).toUpperCase()}
+                    {profileData.user.firstName.charAt(0).toUpperCase()}
                 </div>
 
-                <h2 style={{ margin: "0", color: "#333" }}>{profileData.user.fullName}</h2>
-                <p style={{ color: "#666", margin: "5px 0" }}>{profileData.user.email}</p>
+                <h2 style={{margin: "10px 0 5px 0", color: "#333"}}>
+                    {profileData.user.firstName} {profileData.user.lastName}
+                </h2>
+                <p style={{color: "#666", margin: "5px 0"}}>{profileData.user.email}</p>
 
                 {/* Personal Details */}
-                <div style={{ display: "flex", justifyContent: "center", gap: "15px", fontSize: "0.9rem", color: "#888", marginTop: "5px" }}>
+                <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "15px",
+                    fontSize: "0.9rem",
+                    color: "#888",
+                    marginTop: "5px"
+                }}>
                     <span>📍 {profileData.user.city || "Unknown City"}</span>
                     <span>👤 {profileData.user.gender || "Unknown Gender"}</span>
                 </div>
             </div>
 
-            <hr style={{ border: "0", borderTop: "1px solid #eee", margin: "20px 0" }} />
+            <hr style={{border: "0", borderTop: "1px solid #eee", margin: "20px 0"}}/>
 
             {/* 2. ROLE INFO (Dynamic) */}
             <div style={{ marginBottom: "30px" }}>

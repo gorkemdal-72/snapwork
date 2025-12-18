@@ -2,6 +2,7 @@ package com.snapwork.backend.repository;
 
 import com.snapwork.backend.entity.Application;
 import com.snapwork.backend.entity.Job;
+import com.snapwork.backend.entity.WorkerProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,4 +18,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     // Find applications by Worker
     List<Application> findByWorker(com.snapwork.backend.entity.WorkerProfile worker);
+
+    boolean existsByJobAndWorker(Job job, WorkerProfile worker);
 }

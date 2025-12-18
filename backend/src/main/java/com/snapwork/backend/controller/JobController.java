@@ -1,7 +1,9 @@
 package com.snapwork.backend.controller;
 
+import com.snapwork.backend.dto.ApplyJobRequest; // Yeni DTO importu
 import com.snapwork.backend.dto.JobRequest;
 import com.snapwork.backend.entity.Job;
+import com.snapwork.backend.entity.CustomField;
 import com.snapwork.backend.service.JobService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/jobs")
-@CrossOrigin(origins = "*") // Allow requests from React
+@CrossOrigin(origins = "*") // React ile iletişim izni
 public class JobController {
 
     private final JobService jobService;
@@ -19,8 +21,7 @@ public class JobController {
         this.jobService = jobService;
     }
 
-    // 1. CREATE JOB (Now supports Custom Fields)
-    // POST http://localhost:8080/api/jobs/create
+    // 1. CREATE JOB (İş Oluşturma)
     @PostMapping("/create")
     public ResponseEntity<?> createJob(@RequestBody JobRequest request) {
         try {
@@ -31,26 +32,19 @@ public class JobController {
         }
     }
 
-    // 2. LIST ALL JOBS (Home Page)
-    // GET http://localhost:8080/api/jobs
+    // 2. LIST ALL JOBS (Ana Sayfa İçin)
     @GetMapping
-    public ResponseEntity<List<Job>> getAllJobs() {
-        return ResponseEntity.ok(jobService.getAllJobs());
+    public List<Job> getAllJobs() {
+        return jobService.getAllJobs();
     }
 
-    // 3. GET MY JOBS (Employer Dashboard)
-    // GET http://localhost:8080/api/jobs/my-jobs/{userId}
+    // 3. GET JOBS BY USER (İşveren Paneli)
     @GetMapping("/my-jobs/{userId}")
-    public ResponseEntity<?> getMyJobs(@PathVariable Long userId) {
-        try {
-            return ResponseEntity.ok(jobService.getJobsByUser(userId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+    public List<Job> getJobsByUser(@PathVariable Long userId) {
+        return jobService.getJobsByUser(userId);
     }
 
     // 4. DELETE JOB
-    // DELETE http://localhost:8080/api/jobs/{jobId}?userId={userId}
     @DeleteMapping("/{jobId}")
     public ResponseEntity<?> deleteJob(@PathVariable Long jobId, @RequestParam Long userId) {
         try {
@@ -61,31 +55,24 @@ public class JobController {
         }
     }
 
-    // 5. GET SINGLE JOB (Detail Page)
-    // GET http://localhost:8080/api/jobs/{jobId}
+    // 5. GET JOB BY ID (Detay Sayfası)
     @GetMapping("/{jobId}")
-    public ResponseEntity<?> getJobById(@PathVariable Long jobId) {
-        try {
-            return ResponseEntity.ok(jobService.getJobById(jobId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+    public Job getJobById(@PathVariable Long jobId) {
+        return jobService.getJobById(jobId);
     }
 
     // 6. UPDATE JOB
-    // PUT http://localhost:8080/api/jobs/{jobId}
     @PutMapping("/{jobId}")
     public ResponseEntity<?> updateJob(@PathVariable Long jobId, @RequestBody JobRequest request) {
         try {
             Job updatedJob = jobService.updateJob(jobId, request);
-            return ResponseEntity.ok("Job updated successfully! ID: " + updatedJob.getJobId());
+            return ResponseEntity.ok(updatedJob);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
 
-    // 7. MARK AS COMPLETED
-    // PUT http://localhost:8080/api/jobs/{jobId}/complete
+    // 7. COMPLETE JOB
     @PutMapping("/{jobId}/complete")
     public ResponseEntity<?> completeJob(@PathVariable Long jobId, @RequestParam Long userId) {
         try {
@@ -96,35 +83,35 @@ public class JobController {
         }
     }
 
-    // 8. GET COMPLETED JOBS (History)
-    // Endpoint: GET http://localhost:8080/api/jobs/completed/{userId}
+    // 8. GET COMPLETED JOBS (Geçmiş)
     @GetMapping("/completed/{userId}")
-    public ResponseEntity<?> getCompletedJobs(@PathVariable Long userId) {
-        try {
-            return ResponseEntity.ok(jobService.getCompletedJobs(userId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+    public List<Job> getCompletedJobs(@PathVariable Long userId) {
+        return jobService.getCompletedJobs(userId);
     }
 
-    // 9. GET QUESTIONS FOR A JOB (For Worker Application Form)
-    // GET http://localhost:8080/api/jobs/{jobId}/questions
+    // 9. GET JOB QUESTIONS
     @GetMapping("/{jobId}/questions")
-    public ResponseEntity<?> getJobQuestions(@PathVariable Long jobId) {
-        try {
-            return ResponseEntity.ok(jobService.getJobQuestions(jobId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+    public List<CustomField> getJobQuestions(@PathVariable Long jobId) {
+        return jobService.getJobQuestions(jobId);
     }
 
-    // 10. CANCEL JOB
-    // PUT http://localhost:8080/api/jobs/{jobId}/cancel
+    // 10. CANCEL JOB (İptal Etme)
     @PutMapping("/{jobId}/cancel")
     public ResponseEntity<?> cancelJob(@PathVariable Long jobId, @RequestParam Long userId) {
         try {
             jobService.cancelJob(jobId, userId);
             return ResponseEntity.ok("Job has been cancelled successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    // 11. APPLY FOR JOB 
+    @PostMapping("/apply")
+    public ResponseEntity<?> applyForJob(@RequestBody ApplyJobRequest request) {
+        try {
+            jobService.applyForJob(request);
+            return ResponseEntity.ok("Application submitted successfully!");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }

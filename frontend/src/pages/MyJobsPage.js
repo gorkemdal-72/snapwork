@@ -12,9 +12,9 @@ const JobDashboardCard = ({ job, onDelete, onComplete, onCancel }) => {
             .catch(err => console.error(err));
     }, [job.jobId]);
 
-    // Only show Active (OPEN) jobs here. If COMPLETED, it shouldn't be here ideally,
-    // but if backend returns it, we show it differently.
-    if(job.status === 'COMPLETED') return null;
+    // Only show Active (OPEN) or CANCELLED jobs here.
+    // Completed jobs are typically handled in a separate History view.
+    if (job.status === 'COMPLETED') return null;
 
     return (
         <div style={{
@@ -26,15 +26,22 @@ const JobDashboardCard = ({ job, onDelete, onComplete, onCancel }) => {
                 <h3 style={{ margin: "0 0 5px 0", color: "#2c3e50" }}>{job.title}</h3>
                 <p style={{ margin: 0, color: "#7f8c8d", fontSize: "0.9rem" }}>📅 {job.workDate} • 💰 {job.paymentAmount} ₺</p>
                 <div style={{ marginTop: "5px" }}>
-            <span style={{ padding: "4px 10px", borderRadius: "15px", fontSize: "0.8rem", fontWeight: "bold", backgroundColor: '#e8f5e9', color: '#2e7d32' }}>
-                {job.status}
-            </span>
+                    <span style={{
+                        padding: "4px 10px",
+                        borderRadius: "15px",
+                        fontSize: "0.8rem",
+                        fontWeight: "bold",
+                        backgroundColor: job.status === 'CANCELLED' ? '#f8d7da' : '#e8f5e9',
+                        color: job.status === 'CANCELLED' ? '#721c24' : '#2e7d32'
+                    }}>
+                        {job.status}
+                    </span>
                 </div>
             </div>
 
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                 <button onClick={() => navigate(`/job-applications/${job.jobId}`)} style={{ display: "flex", alignItems: "center", gap: "5px", padding: "8px 15px", backgroundColor: "#e3f2fd", color: "#1565c0", border: "1px solid #bbdefb", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
-                    👥 Applicants <span style={{ backgroundColor:"#1565c0", color:"white", padding:"2px 6px", borderRadius:"10px", fontSize:"0.8rem" }}>{applicantCount}</span>
+                    👥 Applicants <span style={{ backgroundColor: "#1565c0", color: "white", padding: "2px 6px", borderRadius: "10px", fontSize: "0.8rem" }}>{applicantCount}</span>
                 </button>
 
                 <button onClick={() => navigate(`/edit-job/${job.jobId}`)} style={{ padding: "8px 15px", backgroundColor: "#fff3cd", color: "#856404", border: "1px solid #ffeeba", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
@@ -54,14 +61,12 @@ const JobDashboardCard = ({ job, onDelete, onComplete, onCancel }) => {
                     🗑️ Delete
                 </button>
 
-                {/* COMPLETE BUTTON (NOW ACTIVE) */}
                 <button
                     onClick={() => onComplete(job.jobId)}
                     style={{ padding: "8px 15px", backgroundColor: "#d1e7dd", color: "#0f5132", border: "1px solid #badbcc", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}
                 >
                     ✅ Complete
                 </button>
-                {job.status === 'CANCELLED' && <span style={{color: 'red', fontWeight: 'bold'}}>CANCELLED</span>}
             </div>
         </div>
     );
@@ -81,8 +86,8 @@ const MyJobsPage = () => {
     const loadJobs = () => {
         JobService.getMyJobs(user.userId)
             .then((res) => {
-                // Filter out completed jobs from this view (Optional, but cleaner)
-                const activeJobs = res.data.filter(job => job.status === 'OPEN');
+                // Filter out completed jobs from this view
+                const activeJobs = res.data.filter(job => job.status === 'OPEN' || job.status === 'CANCELLED');
                 setJobs(activeJobs);
                 setLoading(false);
             })
@@ -118,13 +123,14 @@ const MyJobsPage = () => {
             JobService.cancelJob(jobId, user.userId)
                 .then(() => {
                     alert("Job Cancelled!");
+                    // Update the specific job status in the local state
                     setJobs(jobs.map(j => j.jobId === jobId ? { ...j, status: 'CANCELLED' } : j));
                 })
                 .catch(err => alert("Error: " + err.message));
         }
     };
 
-    if (loading) return <div style={{textAlign:"center", marginTop: 50}}>Loading Dashboard...</div>;
+    if (loading) return <div style={{ textAlign: "center", marginTop: 50 }}>Loading Dashboard...</div>;
 
     return (
         <div style={{ maxWidth: "1000px", margin: "20px auto", padding: "20px" }}>

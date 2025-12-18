@@ -75,7 +75,7 @@ public class ApplicationService {
         }
 
         // --- NOTIFICATION TRIGGER 1: Notify Employer ---
-        String msg = "New Application: " + worker.getUser().getFullName() + " applied for '" + job.getTitle() + "'";
+        String msg = "New Application: " + worker.getUser().getFirstName()+ worker.getUser().getLastName() + " applied for '" + job.getTitle() + "'";
         Long employerUserId = job.getEmployer().getUser().getUserId();
         // Target URL: Where should employer go when clicking? (Applicants Page)
         String url = "/job-applications/" + job.getJobId();

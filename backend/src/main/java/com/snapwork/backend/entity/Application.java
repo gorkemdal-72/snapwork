@@ -33,4 +33,7 @@ public class Application {
 
     @Column(name = "cover_letter", columnDefinition = "TEXT")
     private String coverLetter; // Default form field
+
+    @Column(name = "proposed_price")
+    private Double proposedPrice;
 }

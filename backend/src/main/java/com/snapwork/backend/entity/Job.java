@@ -2,6 +2,7 @@ package com.snapwork.backend.entity;
 
 import com.snapwork.backend.enums.JobStatus;
 import com.snapwork.backend.enums.PaymentType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -34,9 +35,11 @@ public class Job {
     private String description;
 
     // Job Details
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "work_date", nullable = false)
     private LocalDate workDate;
 
+    @JsonFormat(pattern = "HH:mm")
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
