@@ -9,15 +9,13 @@ import java.util.List;
 
 @Data
 public class JobRequest {
-    // --- Basic Job Info ---
+
     private String title;
     private String description;
 
-    // --- Payment Info ---
     private Double paymentAmount;
-    private PaymentType paymentType; // ENUM: HOURLY, DAILY, TOTAL
+    private PaymentType paymentType;
 
-    // --- Time Info ---
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate workDate;
 
@@ -27,14 +25,11 @@ public class JobRequest {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
 
-    // --- Location Info ---
     private String city;
     private String district;
     private String streetAndBuilding;
 
-    // --- Owner Info ---
-    private Long userId; // The ID of the user posting the job
+    private Long userId;
 
-        // Employer can send a list of questions to be asked to applicants
     private List<CustomFieldDTO> customFields;
 }

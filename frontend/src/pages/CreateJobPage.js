@@ -6,12 +6,12 @@ const CreateJobPage = () => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user"));
 
-    // --- İŞTE BU SATIRLAR EKSİKTİ, GERİ GELDİ 👇 ---
+    // Çift tıklamayı engellemek için bu state'i ekledik
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
-    // -----------------------------------------------
 
-    // Main Job Form State
     const [formData, setFormData] = useState({
         title: "", description: "", paymentAmount: "", paymentType: "HOURLY",
         workDate: "", startTime: "", endTime: "",
@@ -19,7 +19,6 @@ const CreateJobPage = () => {
         userId: user ? user.userId : null,
     });
 
-    // Custom Questions State
     const [customFields, setCustomFields] = useState([]);
 
     useEffect(() => {
@@ -30,9 +29,8 @@ const CreateJobPage = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // --- QUESTION BUILDER LOGIC ---
     const addQuestion = () => {
-        setCustomFields([...customFields, { question: "", fieldType: "TEXT", isRequired: false }]);
+        setCustomFields([...customFields, { question: "", fieldType: "TEXT", options: "", isRequired: false }]);
     };
 
     const removeQuestion = (index) => {
@@ -50,57 +48,47 @@ const CreateJobPage = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Reset messages
+        // Eğer zaten gönderiliyorsa durdur
+        if (isSubmitting) return;
+
+        setIsSubmitting(true); // Butonu kilitle
         setMessage("");
         setError("");
 
-        // Combine Job Data + Questions
-        const payload = {
-            ...formData,
-            customFields: customFields
-        };
+        const payload = { ...formData, customFields: customFields };
 
         JobService.createJob(payload)
             .then(() => {
-                setMessage("Job Posted Successfully with Questions! 🎉 Redirecting...");
+                setMessage("Job Posted Successfully! 🎉 Redirecting...");
                 setTimeout(() => {
                     navigate("/my-jobs");
                 }, 2000);
             })
             .catch((err) => {
-                const resMessage = (err.response && err.response.data && err.response.data.message) || err.message || err.toString();
+                const resMessage = (err.response && err.response.data && err.response.data.message) || err.message;
                 setError("Error: " + resMessage);
+                setIsSubmitting(false); // Hata alırsa butonu tekrar aç
             });
     };
 
     return (
-        <div style={{ maxWidth: "700px", margin: "0 auto", padding: "20px" }}>
+        <div style={{ maxWidth: "700px", margin: "20px auto", padding: "20px" }}>
             <h2 style={{ textAlign: "center" }}>📝 Post a Job</h2>
 
-            {/* --- BİLDİRİM ALANLARI --- */}
-            {message && (
-                <div style={{ backgroundColor: "#d4edda", color: "#155724", padding: "15px", borderRadius: "5px", marginBottom: "20px", border: "1px solid #c3e6cb", textAlign:"center", fontWeight:"bold" }}>
-                    ✅ {message}
-                </div>
-            )}
-
-            {error && (
-                <div style={{ backgroundColor: "#f8d7da", color: "#721c24", padding: "15px", borderRadius: "5px", marginBottom: "20px", border: "1px solid #f5c6cb", textAlign:"center", fontWeight:"bold" }}>
-                    ❌ {error}
-                </div>
-            )}
+            {message && <div style={{ backgroundColor: "#d4edda", color: "#155724", padding: "10px", marginBottom: "10px", textAlign: "center" }}>✅ {message}</div>}
+            {error && <div style={{ backgroundColor: "#f8d7da", color: "#721c24", padding: "10px", marginBottom: "10px", textAlign: "center" }}>❌ {error}</div>}
 
             <form onSubmit={handleSubmit} style={{ display: "grid", gap: "15px" }}>
+                {/* ... (DİĞER INPUT ALANLARI AYNI KALSIN - Title, Desc, Location vs.) ... */}
 
-                {/* --- BASIC INFO --- */}
+                {/* Kısa olması için sadece Screen Questions kısmını ve butonu gösteriyorum */}
+                {/* Buradaki 'Job Details' ve 'Time & Location' kısımlarını silme, olduğu gibi kalsın */}
                 <div style={{ padding: "15px", border: "1px solid #ddd", borderRadius: "8px", backgroundColor: "white" }}>
                     <h3>Job Details</h3>
                     <label>Title:</label>
                     <input type="text" name="title" value={formData.title} onChange={handleChange} required style={{ width: "100%", padding: "8px", marginBottom: "10px" }} />
-
                     <label>Description:</label>
                     <textarea name="description" value={formData.description} onChange={handleChange} required style={{ width: "100%", padding: "8px" }} rows="3" />
-
                     <div style={{ display: "flex", gap: "10px" }}>
                         <input type="number" name="paymentAmount" placeholder="Price" value={formData.paymentAmount} onChange={handleChange} required style={{ flex: 1, padding: "8px" }} />
                         <select name="paymentType" value={formData.paymentType} onChange={handleChange} style={{ flex: 1, padding: "8px" }}>
@@ -111,7 +99,6 @@ const CreateJobPage = () => {
                     </div>
                 </div>
 
-                {/* --- LOCATION & TIME --- */}
                 <div style={{ padding: "15px", border: "1px solid #ddd", borderRadius: "8px", backgroundColor: "white" }}>
                     <h3>Time & Location</h3>
                     <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
@@ -124,40 +111,44 @@ const CreateJobPage = () => {
                     <input type="text" name="streetAndBuilding" placeholder="Address" value={formData.streetAndBuilding} onChange={handleChange} required style={{ width: "100%", padding: "8px" }} />
                 </div>
 
-                {/* --- CUSTOM QUESTIONS SECTION --- */}
-                <div style={{ padding: "15px", border: "1px solid #007bff", borderRadius: "8px", backgroundColor: "#f0f8ff" }}>
-                    <h3>❓ Screening Questions (Optional)</h3>
 
+                <div style={{ padding: "15px", border: "1px solid #007bff", borderRadius: "8px", backgroundColor: "#f0f8ff" }}>
+                    <h3>❓ Screening Questions</h3>
                     {customFields.map((field, index) => (
-                        <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                            <span style={{ fontWeight: "bold" }}>{index + 1}.</span>
-                            <input
-                                type="text"
-                                placeholder="Type your question..."
-                                value={field.question}
-                                onChange={(e) => handleQuestionChange(index, "question", e.target.value)}
-                                required
-                                style={{ flex: 2, padding: "8px" }}
-                            />
-                            <select
-                                value={field.fieldType}
-                                onChange={(e) => handleQuestionChange(index, "fieldType", e.target.value)}
-                                style={{ flex: 1, padding: "8px" }}
-                            >
-                                <option value="TEXT">Text Answer</option>
-                                <option value="NUMBER">Number</option>
-                            </select>
-                            <button type="button" onClick={() => removeQuestion(index)} style={{ background: "red", color: "white", border: "none", padding: "5px 10px", cursor: "pointer" }}>X</button>
+                        <div key={index} style={{ marginBottom: "10px", borderBottom: "1px solid #ccc", paddingBottom: "10px" }}>
+                            <div style={{ display: "flex", gap: "10px" }}>
+                                <input type="text" placeholder="Question" value={field.question} onChange={(e) => handleQuestionChange(index, "question", e.target.value)} required style={{ flex: 2, padding: "5px" }} />
+                                <select value={field.fieldType} onChange={(e) => handleQuestionChange(index, "fieldType", e.target.value)}>
+                                    <option value="TEXT">Text</option>
+                                    <option value="NUMBER">Number</option>
+                                    <option value="DROPDOWN">Dropdown</option>
+                                </select>
+                                <button type="button" onClick={() => removeQuestion(index)} style={{ color: "red", border: "none" }}>X</button>
+                            </div>
+                            {field.fieldType === "DROPDOWN" && (
+                                <input type="text" placeholder="Options (comma separated)" value={field.options} onChange={(e) => handleQuestionChange(index, "options", e.target.value)} style={{ width: "100%", marginTop: "5px", padding: "5px" }} />
+                            )}
+                            <label style={{ fontSize: "0.8rem", marginTop: "5px", display: "block" }}>
+                                <input type="checkbox" checked={field.isRequired} onChange={(e) => handleQuestionChange(index, "isRequired", e.target.checked)} /> Required?
+                            </label>
                         </div>
                     ))}
-
-                    <button type="button" onClick={addQuestion} style={{ background: "#007bff", color: "white", border: "none", padding: "8px 15px", borderRadius: "5px", cursor: "pointer" }}>
-                        + Add Question
-                    </button>
+                    <button type="button" onClick={addQuestion} style={{ background: "#007bff", color: "white", padding: "5px 10px", border: "none", borderRadius: "5px" }}>+ Add Question</button>
                 </div>
 
-                <button type="submit" style={{ padding: "15px", backgroundColor: "#28a745", color: "white", border: "none", fontSize: "1.1rem", fontWeight: "bold", cursor: "pointer" }}>
-                    🚀 Publish Job
+                <button
+                    type="submit"
+                    disabled={isSubmitting} // Tıklanınca pasif olur
+                    style={{
+                        padding: "15px",
+                        backgroundColor: isSubmitting ? "#ccc" : "#28a745", // Pasifken gri, aktifken yeşil
+                        color: "white",
+                        border: "none",
+                        fontWeight: "bold",
+                        cursor: isSubmitting ? "not-allowed" : "pointer"
+                    }}
+                >
+                    {isSubmitting ? "Posting..." : "🚀 Publish Job"}
                 </button>
             </form>
         </div>

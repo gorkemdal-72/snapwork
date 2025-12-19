@@ -63,20 +63,27 @@ public class JobService {
 
         Job savedJob = jobRepository.save(job);
 
-        // Save Custom Fields if they exist
-        if (request.getCustomFields() != null) {
-            for (CustomFieldDTO fieldDTO : request.getCustomFields()) {
-                CustomField field = new CustomField();
-                field.setJob(savedJob);
-                field.setQuestion(fieldDTO.getQuestion());
-                field.setFieldType(fieldDTO.getFieldType());
-                field.setOptions(fieldDTO.getOptions());
-                field.setRequired(fieldDTO.isRequired());
-                customFieldRepository.save(field);
+        List<CustomFieldDTO> fieldDTOs = request.getCustomFields();
+
+        if (fieldDTOs != null && !fieldDTOs.isEmpty()) {
+            for (CustomFieldDTO fieldDTO : fieldDTOs) {
+                CustomField customField = new CustomField();
+
+                customField.setJob(savedJob);
+
+                customField.setQuestion(fieldDTO.getQuestion());
+                customField.setFieldType(fieldDTO.getFieldType());
+
+                customField.setOptions(fieldDTO.getOptions());
+                customField.setRequired(fieldDTO.isRequired());
+                // ---------------------------------------
+
+                customFieldRepository.save(customField);
             }
         }
         return savedJob;
     }
+
 
     // 2. LIST ALL JOBS
     public List<Job> getAllJobs() {
