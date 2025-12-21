@@ -30,4 +30,5 @@ public class EmployerProfile {
     @Column(name = "avg_rating")
     private Double avgRating = 0.0;
 
+
 }

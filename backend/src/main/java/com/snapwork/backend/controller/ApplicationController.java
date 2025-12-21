@@ -2,8 +2,11 @@ package com.snapwork.backend.controller;
 
 import com.snapwork.backend.dto.ApplicationRequest;
 import com.snapwork.backend.service.ApplicationService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/applications")
@@ -22,9 +25,21 @@ public class ApplicationController {
     public ResponseEntity<?> applyForJob(@RequestBody ApplicationRequest request) {
         try {
             applicationService.createApplication(request);
-            return ResponseEntity.ok("Application submitted successfully!");
+            return ResponseEntity.ok(Collections.singletonMap("message", "Application submitted successfully!"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            String errorMessage = "An unexpected error occurred.";
+            String detailedError = e.getMessage();
+
+            // Check for the specific database trigger error
+            if (detailedError != null && detailedError.contains("The work date for this job has passed")) {
+                errorMessage = "Applications are closed because the work date has passed.";
+            } else {
+                errorMessage = detailedError;
+            }
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", errorMessage));
         }
     }
 
@@ -46,7 +61,7 @@ public class ApplicationController {
         try {
             return ResponseEntity.ok(applicationService.getMyApplications(userId));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Collections.singletonMap("message", e.getMessage()));
         }
     }
 
@@ -55,9 +70,9 @@ public class ApplicationController {
     public ResponseEntity<?> updateStatus(@PathVariable Long applicationId, @RequestParam String status) {
         try {
             applicationService.updateApplicationStatus(applicationId, status);
-            return ResponseEntity.ok("Application status updated to " + status);
+            return ResponseEntity.ok(Collections.singletonMap("message", "Application status updated to " + status));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Collections.singletonMap("message", e.getMessage()));
         }
     }
 
@@ -67,7 +82,7 @@ public class ApplicationController {
         try {
             return ResponseEntity.ok(applicationService.getApplicationDetails(applicationId));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Collections.singletonMap("message", e.getMessage()));
         }
     }
 }

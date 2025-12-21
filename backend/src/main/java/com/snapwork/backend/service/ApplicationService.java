@@ -84,24 +84,17 @@ public class ApplicationService {
     }
 
     // 5. UPDATE STATUS (Accept/Reject)
-    public void updateApplicationStatus(Long applicationId, String newStatus) {
-        Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new RuntimeException("Application not found!"));
-
-        if (!newStatus.equals("ACCEPTED") && !newStatus.equals("REJECTED")) {
-            throw new RuntimeException("Invalid status!");
+    public void updateApplicationStatus(Long applicationId, String status) {
+        if ("ACCEPTED".equalsIgnoreCase(status)) {
+            // Call the stored procedure to accept this specific applicant
+            applicationRepository.acceptApplication(applicationId);
+        } else {
+            // Handle REJECTED or other statuses via standard JPA
+            Application app = applicationRepository.findById(applicationId)
+                    .orElseThrow(() -> new RuntimeException("Application not found"));
+            app.setStatus(status);
+            applicationRepository.save(app);
         }
-
-        application.setStatus(newStatus);
-        applicationRepository.save(application);
-
-        // --- NOTIFICATION TRIGGER 2: Notify Worker ---
-        String msg = "Your application for '" + application.getJob().getTitle() + "' was " + newStatus;
-        Long workerUserId = application.getWorker().getUser().getUserId();
-        // Target URL: My Applications Page
-        String url = "/my-applications";
-
-        notificationService.sendNotification(workerUserId, msg, url);
     }
 
     // ... (Other existing methods: getApplicationsByJobId, getApplicationCount, getMyApplications, getApplicationDetails) ...

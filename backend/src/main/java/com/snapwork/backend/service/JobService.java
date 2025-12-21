@@ -45,11 +45,7 @@ public class JobService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        EmployerProfile employer = employerProfileRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Error: You must create an Employer Profile first!"));
-
         Job job = new Job();
-        job.setEmployer(employer);
         job.setTitle(request.getTitle());
         job.setDescription(request.getDescription());
         job.setPaymentAmount(request.getPaymentAmount());
@@ -143,26 +139,18 @@ public class JobService {
 
     // 7. MARK JOB AS COMPLETED
     public void completeJob(Long jobId, Long userId) {
+        // Validation: Ensure the user owns the job
         Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found!"));
+                .orElseThrow(() -> new RuntimeException("Job not found"));
 
         if (!job.getEmployer().getUser().getUserId().equals(userId)) {
-            throw new RuntimeException("You are not authorized to complete this job!");
+            throw new RuntimeException("Unauthorized: You do not own this job.");
         }
 
-        job.setStatus(JobStatus.COMPLETED);
-        jobRepository.save(job);
-
-        List<Application> apps = applicationRepository.findByJob(job);
-        for (Application app : apps) {
-            if ("ACCEPTED".equals(app.getStatus())) {
-                String msg = "Job '" + job.getTitle() + "' is marked as COMPLETED. Please rate your employer!";
-                Long workerId = app.getWorker().getUser().getUserId();
-                String url = "/completed-jobs";
-                notificationService.sendNotification(workerId, msg, url);
-            }
-        }
+        // Call the stored procedure to close the job
+        jobRepository.completeJobManually(jobId);
     }
+
 
     // 8. GET COMPLETED JOBS
     public List<Job> getCompletedJobs(Long userId) {

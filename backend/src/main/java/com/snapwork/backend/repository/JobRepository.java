@@ -3,7 +3,9 @@ package com.snapwork.backend.repository;
 import com.snapwork.backend.entity.EmployerProfile;
 import com.snapwork.backend.entity.Job;
 import com.snapwork.backend.enums.JobStatus;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -23,4 +25,9 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     // Bu sorgu veritabanına doğrudan "Bana bu patronun COMPLETED olan işlerini ver" der.
     @Query("SELECT j FROM Job j WHERE j.employer = :employer AND j.status = 'COMPLETED'")
     List<Job> findCompletedJobs(@Param("employer") EmployerProfile employer);
+
+    @Modifying
+    @Transactional
+    @Query(value = "CALL complete_job_proc(:jobId)", nativeQuery = true)
+    void completeJobManually(@Param("jobId") Long jobId);
 }

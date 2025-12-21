@@ -42,10 +42,12 @@ const JobApplicationsPage = () => {
             .catch((err) => {
                 console.error(err);
                 setLoading(false);
+                const errorMessage = err.response?.data?.message || 'Failed to load applications!';
+
                 Swal.fire({
                     iconHtml: staticIcons.error,
                     title: 'Oops...',
-                    text: 'Failed to load applications!',
+                    text: errorMessage,
                     ...swalOptions
                 });
             });
@@ -134,9 +136,12 @@ const JobApplicationsPage = () => {
                         });
                     })
                     .catch(err => {
+
+                        const errorMessage = err.response?.data?.message || err.message || "An unknown error occurred";
+
                         Swal.fire({
                             title: 'Error!',
-                            text: "Error: " + err.message,
+                            text: errorMessage,
                             iconHtml: staticIcons.error,
                             ...swalOptions
                         });
