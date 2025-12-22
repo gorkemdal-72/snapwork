@@ -1,5 +1,6 @@
 package com.snapwork.backend.entity;
 
+import com.snapwork.backend.enums.JobStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -25,14 +26,16 @@ public class Application {
     @JoinColumn(name = "worker_id", nullable = false)
     private WorkerProfile worker;
 
+    // CHANGE: Used @Enumerated to handle String conversion automatically
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status = "PENDING"; // PENDING, ACCEPTED, REJECTED
+    private JobStatus status = JobStatus.PENDING; // Default status is PENDING
 
     @CreationTimestamp
     private LocalDateTime appliedAt;
 
     @Column(name = "cover_letter", columnDefinition = "TEXT")
-    private String coverLetter; // Default form field
+    private String coverLetter;
 
     @Column(name = "proposed_price")
     private Double proposedPrice;

@@ -25,12 +25,13 @@ public class ApplicationController {
     public ResponseEntity<?> applyForJob(@RequestBody ApplicationRequest request) {
         try {
             applicationService.createApplication(request);
+            // Returns a JSON object for easier parsing on Frontend
             return ResponseEntity.ok(Collections.singletonMap("message", "Application submitted successfully!"));
         } catch (Exception e) {
             String errorMessage = "An unexpected error occurred.";
             String detailedError = e.getMessage();
 
-            // Check for the specific database trigger error
+            // Handle specific Database Trigger errors (e.g., Deadline passed)
             if (detailedError != null && detailedError.contains("The work date for this job has passed")) {
                 errorMessage = "Applications are closed because the work date has passed.";
             } else {
@@ -49,7 +50,7 @@ public class ApplicationController {
         return ResponseEntity.ok(applicationService.getApplicationsByJobId(jobId));
     }
 
-    // 3. GET APPLICATION COUNT (For Badge)
+    // 3. GET APPLICATION COUNT (For Badge/Notification)
     @GetMapping("/job/{jobId}/count")
     public ResponseEntity<?> getApplicationCount(@PathVariable Long jobId) {
         return ResponseEntity.ok(applicationService.getApplicationCount(jobId));
@@ -76,7 +77,7 @@ public class ApplicationController {
         }
     }
 
-    // GET http://localhost:8080/api/applications/{applicationId}/details
+    // 6. GET APPLICATION DETAILS (Cover Letter & Answers)
     @GetMapping("/{applicationId}/details")
     public ResponseEntity<?> getApplicationDetails(@PathVariable Long applicationId) {
         try {

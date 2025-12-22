@@ -3,6 +3,7 @@ package com.snapwork.backend.service;
 import com.snapwork.backend.dto.ApplicationDetailsDTO;
 import com.snapwork.backend.dto.ApplicationRequest;
 import com.snapwork.backend.entity.*;
+import com.snapwork.backend.enums.JobStatus;
 import com.snapwork.backend.repository.*;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +18,6 @@ public class ApplicationService {
     private final WorkerProfileRepository workerRepository;
     private final CustomFieldRepository customFieldRepository;
     private final FieldResponseRepository fieldResponseRepository;
-
-    // NEW: Notification Service Injection
     private final NotificationService notificationService;
 
     public ApplicationService(ApplicationRepository applicationRepository,
@@ -39,28 +38,40 @@ public class ApplicationService {
 
     // 1. CREATE APPLICATION (Apply)
     public void createApplication(ApplicationRequest request) {
+        // Validate Job existence
         Job job = jobRepository.findById(request.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found!"));
 
+        // Validate User existence
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
+        // Validate Worker Profile existence
         WorkerProfile worker = workerRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Error: You must create a Worker Profile to apply!"));
 
+        // Prevent applying to own job
         if (job.getEmployer().getUser().getUserId().equals(request.getUserId())) {
             throw new RuntimeException("You cannot apply to your own job!");
+        }
+
+        // Check if already applied (Optional but recommended)
+        if (applicationRepository.existsByJobAndWorker(job, worker)) {
+            throw new RuntimeException("You have already applied for this job!");
         }
 
         Application application = new Application();
         application.setJob(job);
         application.setWorker(worker);
-        application.setStatus("PENDING");
+
+        // CHANGE: Direct assignment! No need for .name() because Entity uses Enum.
+        application.setStatus(JobStatus.PENDING);
+
         application.setCoverLetter(request.getCoverLetter());
 
         Application savedApp = applicationRepository.save(application);
 
-        // Save Responses
+        // Save Custom Field Responses (Screening Questions)
         if (request.getResponses() != null) {
             for (ApplicationRequest.FieldResponseDTO dto : request.getResponses()) {
                 CustomField question = customFieldRepository.findById(dto.getFieldId())
@@ -74,55 +85,59 @@ public class ApplicationService {
             }
         }
 
-        // --- NOTIFICATION TRIGGER 1: Notify Employer ---
-        String msg = "New Application: " + worker.getUser().getFirstName()+ worker.getUser().getLastName() + " applied for '" + job.getTitle() + "'";
+        // --- NOTIFICATION TRIGGER: Notify Employer ---
+        String msg = "New Application: " + worker.getUser().getFirstName() + " " + worker.getUser().getLastName() + " applied for '" + job.getTitle() + "'";
         Long employerUserId = job.getEmployer().getUser().getUserId();
-        // Target URL: Where should employer go when clicking? (Applicants Page)
         String url = "/job-applications/" + job.getJobId();
 
         notificationService.sendNotification(employerUserId, msg, url);
     }
 
-    // 5. UPDATE STATUS (Accept/Reject)
+    // 2. UPDATE STATUS (Accept/Reject)
     public void updateApplicationStatus(Long applicationId, String status) {
-        if ("ACCEPTED".equalsIgnoreCase(status)) {
-            // Call the stored procedure to accept this specific applicant
-            applicationRepository.acceptApplication(applicationId);
-        } else {
-            // Handle REJECTED or other statuses via standard JPA
-            Application app = applicationRepository.findById(applicationId)
-                    .orElseThrow(() -> new RuntimeException("Application not found"));
-            app.setStatus(status);
-            applicationRepository.save(app);
+        // 1. Find application
+        Application app = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found with id: " + applicationId));
+
+        // 2. Convert String status to Enum and set directly
+        try {
+            // Converts "accepted" -> JobStatus.ACCEPTED
+            app.setStatus(JobStatus.valueOf(status.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status: " + status);
         }
+
+        // 3. Save (JPA automatically converts Enum to String for DB)
+        applicationRepository.save(app);
     }
 
-    // ... (Other existing methods: getApplicationsByJobId, getApplicationCount, getMyApplications, getApplicationDetails) ...
-    // (Keep them as they were, I omitted them here for brevity but DO NOT DELETE them from your file)
-
     public List<Application> getApplicationsByJobId(Long jobId) {
-        Job job = jobRepository.findById(jobId).orElseThrow();
+        Job job = jobRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
         return applicationRepository.findByJob(job);
     }
 
     public long getApplicationCount(Long jobId) {
-        Job job = jobRepository.findById(jobId).orElseThrow();
+        Job job = jobRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
         return applicationRepository.countByJob(job);
     }
 
     public List<Application> getMyApplications(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow();
-        WorkerProfile worker = workerRepository.findByUser(user).orElseThrow();
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        WorkerProfile worker = workerRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Worker profile not found"));
         return applicationRepository.findByWorker(worker);
     }
 
     public ApplicationDetailsDTO getApplicationDetails(Long applicationId) {
-        Application application = applicationRepository.findById(applicationId).orElseThrow();
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
         List<FieldResponse> fieldResponses = fieldResponseRepository.findByApplication(application);
 
         ApplicationDetailsDTO dto = new ApplicationDetailsDTO();
         dto.setCoverLetter(application.getCoverLetter());
 
+        // Map Question & Answers
         List<ApplicationDetailsDTO.QuestionAnswer> qaList = fieldResponses.stream().map(fr -> {
             ApplicationDetailsDTO.QuestionAnswer qa = new ApplicationDetailsDTO.QuestionAnswer();
             qa.setQuestion(fr.getCustomField().getQuestion());

@@ -2,7 +2,7 @@ package com.snapwork.backend.service;
 
 import com.snapwork.backend.dto.ApplyJobRequest;
 import com.snapwork.backend.dto.JobRequest;
-import com.snapwork.backend.dto.CustomFieldDTO; // <-- BU IMPORT EKLENDİ
+import com.snapwork.backend.dto.CustomFieldDTO;
 import com.snapwork.backend.entity.*;
 import com.snapwork.backend.enums.JobStatus;
 import com.snapwork.backend.repository.*;
@@ -19,7 +19,6 @@ public class JobService {
     private final EmployerProfileRepository employerProfileRepository;
     private final UserRepository userRepository;
     private final CustomFieldRepository customFieldRepository;
-
     private final WorkerProfileRepository workerProfileRepository;
     private final ApplicationRepository applicationRepository;
     private final NotificationService notificationService;
@@ -56,6 +55,8 @@ public class JobService {
         job.setCity(request.getCity());
         job.setDistrict(request.getDistrict());
         job.setStreetAndBuilding(request.getStreetAndBuilding());
+        // Default status is usually set in Entity or Constructor, but can be set here if needed:
+        // job.setStatus(JobStatus.OPEN);
 
         Job savedJob = jobRepository.save(job);
 
@@ -64,15 +65,11 @@ public class JobService {
         if (fieldDTOs != null && !fieldDTOs.isEmpty()) {
             for (CustomFieldDTO fieldDTO : fieldDTOs) {
                 CustomField customField = new CustomField();
-
                 customField.setJob(savedJob);
-
                 customField.setQuestion(fieldDTO.getQuestion());
                 customField.setFieldType(fieldDTO.getFieldType());
-
                 customField.setOptions(fieldDTO.getOptions());
                 customField.setRequired(fieldDTO.isRequired());
-                // ---------------------------------------
 
                 customFieldRepository.save(customField);
             }
@@ -152,24 +149,27 @@ public class JobService {
     }
 
 
-    // 8. GET COMPLETED JOBS
+    // 8. GET COMPLETED JOBS (Employer & Worker)
     public List<Job> getCompletedJobs(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
         List<Job> completedJobs = new ArrayList<>();
 
+        // Fetch jobs where user was the Employer
         Optional<EmployerProfile> employer = employerProfileRepository.findByUser(user);
         if (employer.isPresent()) {
             List<Job> employerJobs = jobRepository.findCompletedJobs(employer.get());
             completedJobs.addAll(employerJobs);
         }
 
+        // Fetch jobs where user was the Worker
         Optional<WorkerProfile> worker = workerProfileRepository.findByUser(user);
         if (worker.isPresent()) {
             List<Application> applications = applicationRepository.findByWorker(worker.get());
             for (Application app : applications) {
-                if ("ACCEPTED".equals(app.getStatus()) && app.getJob().getStatus() == JobStatus.COMPLETED) {
+                // FIXED: Using Enum comparison instead of String
+                if (app.getStatus() == JobStatus.ACCEPTED && app.getJob().getStatus() == JobStatus.COMPLETED) {
                     completedJobs.add(app.getJob());
                 }
             }
@@ -201,7 +201,7 @@ public class JobService {
         job.setStatus(JobStatus.CANCELLED);
         jobRepository.save(job);
 
-        // send notification all applicants
+        // Notify all applicants
         List<Application> applications = applicationRepository.findByJob(job);
         for (Application app : applications) {
             String msg = "Job '" + job.getTitle() + "' has been cancelled by the employer.";
@@ -238,7 +238,10 @@ public class JobService {
         Application app = new Application();
         app.setJob(job);
         app.setWorker(worker);
-        app.setStatus("PENDING");
+
+        // FIXED: Using Enum directly
+        app.setStatus(JobStatus.PENDING);
+
         app.setCoverLetter(request.getCoverLetter());
 
         // Set Proposed Price (If provided)
