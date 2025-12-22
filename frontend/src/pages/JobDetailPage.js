@@ -74,7 +74,7 @@ const JobDetailPage = () => {
 
         JobService.applyForJob(applyData)
             .then(() => {
-                alert("Application Sent Successfully! 🚀");
+                alert("Application Sent Successfully!");
                 navigate("/my-applications");
             })
             .catch(err => {
@@ -104,7 +104,7 @@ const JobDetailPage = () => {
                 </button>
             ) : (
                 <div style={{ marginTop: "30px", padding: "20px", backgroundColor: "#f9f9f9", borderRadius: "10px", border: "1px solid #ddd" }}>
-                    <h3 style={{ marginTop: 0 }}>📝 Application Form</h3>
+                    <h3 style={{ marginTop: 0 }}> Application Form</h3>
 
                     <form onSubmit={submitApplication}>
 

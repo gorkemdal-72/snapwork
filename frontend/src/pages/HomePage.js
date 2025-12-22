@@ -33,10 +33,10 @@ const HomePage = () => {
         job.city.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Time Formatter (HH:mm:ss -> HH:mm)
+    // Time Formatter
     const formatTime = (time) => time ? time.slice(0, 5) : "";
 
-    // Helper: Render Rating Badge
+    //  Render Rating Badge
     const renderRating = (employer) => {
         if (!employer) return null;
 
@@ -57,7 +57,7 @@ const HomePage = () => {
                 alignItems: "center",
                 gap: "4px"
             }}>
-            {hasRating ? `⭐ ${rating.toFixed(1)}` : "🆕 New"}
+            {hasRating ? `⭐ ${rating.toFixed(1)}` : " New"}
         </span>
         );
     };
@@ -69,7 +69,7 @@ const HomePage = () => {
 
             {/* SEARCH HEADER */}
             <div style={{ textAlign: "center", marginBottom: "40px" }}>
-                <h1 style={{ color: "#2c3e50" }}>🚀 Find Your Next Job</h1>
+                <h1 style={{ color: "#2c3e50" }}>Find Your Next Job</h1>
                 <input
                     type="text"
                     placeholder="🔍 Search by Job Title or City..."
@@ -97,7 +97,7 @@ const HomePage = () => {
                                 textTransform: "uppercase", marginBottom: "5px",
                                 display: "flex", alignItems: "center"
                             }}>
-                                🏢 {job.employer?.companyName || "Unknown"}
+                                 {job.employer?.companyName || "Unknown"}
                                 {renderRating(job.employer)}
                             </div>
 

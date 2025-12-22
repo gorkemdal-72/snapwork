@@ -13,10 +13,9 @@ const CreateWorkerPage = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Direct call to backend (Or you can create WorkerService.js)
         axios.post("http://localhost:8080/api/worker/create", formData)
             .then(() => {
-                alert("Worker Profile Created! ✅");
+                alert("Worker Profile Created! ");
                 navigate("/"); // Go Home
             })
             .catch((err) => alert("Error: " + err.message));
@@ -25,7 +24,7 @@ const CreateWorkerPage = () => {
     return (
         <div className="auth-container">
             <div className="auth-card">
-                <h2 className="auth-title">👷 Create Worker Profile</h2>
+                <h2 className="auth-title"> Create Worker Profile</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Short Bio (Skills):</label>

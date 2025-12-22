@@ -54,7 +54,7 @@ const RegisterPage = () => {
     return (
         <div className="auth-container" style={{paddingTop: "20px", paddingBottom: "20px"}}>
             <div className="auth-card" style={{maxWidth: "500px"}}>
-                <h2 className="auth-title">🚀 Join SnapWork</h2>
+                <h2 className="auth-title"> Join SnapWork</h2>
 
                 {/* --- INLINE NOTIFICATIONS --- */}
                 {successMsg && (
@@ -71,10 +71,10 @@ const RegisterPage = () => {
                 {/* ROLE SELECTION */}
                 <div className="role-selection">
                     <div className={`role-card ${role === 'worker' ? 'active' : ''}`} onClick={() => setRole('worker')}>
-                        👷 Worker
+                         Worker
                     </div>
                     <div className={`role-card ${role === 'employer' ? 'active' : ''}`} onClick={() => setRole('employer')}>
-                        👔 Employer
+                         Employer
                     </div>
                 </div>
 

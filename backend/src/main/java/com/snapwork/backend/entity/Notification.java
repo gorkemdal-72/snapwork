@@ -15,7 +15,7 @@ public class Notification {
     @Column(name = "notification_id")
     private Long notificationId;
 
-    // Who receives this notification?
+    // Who receives this notification
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -24,7 +24,7 @@ public class Notification {
     @Column(nullable = false)
     private String message;
 
-    // Where should the user go when they click? (e.g., "/my-jobs")
+    // Where should the user go when they click
     @Column(name = "target_url")
     private String targetUrl;
 

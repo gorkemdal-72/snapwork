@@ -23,7 +23,7 @@ public class WorkerService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        // 2. CHECK: Does user already have a worker profile?
+        // 2. check user already have a worker profile
         if (workerRepository.existsByUser(user)) {
             throw new RuntimeException("Error: You already have a Worker Profile!");
         }
@@ -45,7 +45,7 @@ public class WorkerService {
         WorkerProfile profile = workerRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Profile not found!"));
 
-        // 1. UPDATE USER TABLE INFO
+        // 1. UPDATE USER TABLE
         if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
         if (request.getLastName() != null) user.setLastName(request.getLastName());
         if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
@@ -55,7 +55,7 @@ public class WorkerService {
 
         userRepository.save(user); // Save User changes
 
-        // 2. UPDATE WORKER PROFILE INFO
+        // 2. UPDATE WORKER PROFILE
         if (request.getBio() != null) profile.setBio(request.getBio());
         if (request.getPhoneNumber() != null) profile.setPhone(request.getPhoneNumber());
         if (request.getCity() != null) profile.setCity(request.getCity());

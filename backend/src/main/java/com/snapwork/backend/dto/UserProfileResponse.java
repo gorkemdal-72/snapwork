@@ -13,7 +13,7 @@ public class UserProfileResponse {
     private boolean hasEmployerProfile;
     private boolean hasWorkerProfile;
 
-    // Detail Objects
+    // Detail objects
     private EmployerProfile employerProfile;
     private WorkerProfile workerProfile;
 }

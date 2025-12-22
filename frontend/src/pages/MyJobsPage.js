@@ -41,11 +41,11 @@ const JobDashboardCard = ({ job, onDelete, onComplete, onCancel }) => {
 
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                 <button onClick={() => navigate(`/job-applications/${job.jobId}`)} style={{ display: "flex", alignItems: "center", gap: "5px", padding: "8px 15px", backgroundColor: "#e3f2fd", color: "#1565c0", border: "1px solid #bbdefb", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
-                    👥 Applicants <span style={{ backgroundColor: "#1565c0", color: "white", padding: "2px 6px", borderRadius: "10px", fontSize: "0.8rem" }}>{applicantCount}</span>
+                     Applicants <span style={{ backgroundColor: "#1565c0", color: "white", padding: "2px 6px", borderRadius: "10px", fontSize: "0.8rem" }}>{applicantCount}</span>
                 </button>
 
                 <button onClick={() => navigate(`/edit-job/${job.jobId}`)} style={{ padding: "8px 15px", backgroundColor: "#fff3cd", color: "#856404", border: "1px solid #ffeeba", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
-                    ✏️ Edit
+                    ✏ Edit
                 </button>
 
                 {job.status === 'OPEN' && (
@@ -53,19 +53,19 @@ const JobDashboardCard = ({ job, onDelete, onComplete, onCancel }) => {
                         onClick={() => onCancel(job.jobId)}
                         style={{ padding: "8px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
                     >
-                        🚫 Cancel
+                         Cancel
                     </button>
                 )}
 
                 <button onClick={() => onDelete(job.jobId)} style={{ padding: "8px 15px", backgroundColor: "#f8d7da", color: "#721c24", border: "1px solid #f5c6cb", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
-                    🗑️ Delete
+                    🗑 Delete
                 </button>
 
                 <button
                     onClick={() => onComplete(job.jobId)}
                     style={{ padding: "8px 15px", backgroundColor: "#d1e7dd", color: "#0f5132", border: "1px solid #badbcc", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}
                 >
-                    ✅ Complete
+                     Complete
                 </button>
             </div>
         </div>
@@ -135,7 +135,7 @@ const MyJobsPage = () => {
     return (
         <div style={{ maxWidth: "1000px", margin: "20px auto", padding: "20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-                <h2 style={{ color: "#2c3e50", margin: 0 }}>📊 Employer Dashboard</h2>
+                <h2 style={{ color: "#2c3e50", margin: 0 }}> Employer Dashboard</h2>
                 <span style={{ color: "#7f8c8d" }}>Active Jobs: {jobs.length}</span>
             </div>
 

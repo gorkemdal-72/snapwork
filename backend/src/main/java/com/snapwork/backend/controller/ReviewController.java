@@ -16,7 +16,7 @@ public class ReviewController {
         this.reviewService = reviewService;
     }
 
-    // POST http://localhost:8080/api/reviews/create
+    // submit new review
     @PostMapping("/create")
     public ResponseEntity<?> createReview(@RequestBody ReviewRequest request) {
         try {
@@ -32,13 +32,12 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getReviewsForUser(userId));
     }
 
-    // GET http://localhost:8080/api/reviews/check?jobId=1&reviewerId=5
     @GetMapping("/check")
     public ResponseEntity<?> getReview(@RequestParam Long jobId, @RequestParam Long reviewerId) {
         return ResponseEntity.ok(reviewService.getReviewByJobAndReviewer(jobId, reviewerId));
     }
 
-    // PUT http://localhost:8080/api/reviews/{reviewId}
+    // update review
     @PutMapping("/{reviewId}")
     public ResponseEntity<?> updateReview(@PathVariable Long reviewId, @RequestBody ReviewRequest request) {
         try {

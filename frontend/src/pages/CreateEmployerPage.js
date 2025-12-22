@@ -45,7 +45,7 @@ const CreateEmployerPage = () => {
 
     return (
         <div style={{ maxWidth: "500px", margin: "50px auto", padding: "20px", border: "1px solid #ddd", borderRadius: "8px" }}>
-            <h2 style={{ textAlign: "center" }}>👔 Become an Employer</h2>
+            <h2 style={{ textAlign: "center" }}> Become an Employer</h2>
             <p style={{ textAlign: "center", color: "#666" }}>To post jobs, you need to create a company profile first.</p>
 
             {message && <div style={{ color: "green", fontWeight: "bold", marginBottom: 15 }}>{message}</div>}

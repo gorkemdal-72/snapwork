@@ -24,7 +24,7 @@ public class Review {
     @JoinColumn(name = "reviewer_id", nullable = false)
     private User reviewer;
 
-    // Who received the review?
+    // Who received the review
     @ManyToOne
     @JoinColumn(name = "reviewed_id", nullable = false)
     private User reviewee;

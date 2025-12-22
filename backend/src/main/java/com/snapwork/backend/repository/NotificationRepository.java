@@ -14,9 +14,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     long countByUserAndIsReadFalse(User user);
 
-    // SQL Query yerine bu metodu kullanacağız.
-    // Spring Data JPA bunu otomatik olarak anlar:
-    // "Bana bu kullanıcının ID'sine sahip ve isRead=false olanları getir"
     List<Notification> findAllByUser_UserIdAndIsReadFalse(Long userId);
 
 }

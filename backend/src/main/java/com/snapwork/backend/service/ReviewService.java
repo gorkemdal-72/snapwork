@@ -58,7 +58,7 @@ public class ReviewService {
         return reviewRepository.findByRevieweeUserId(userId);
     }
 
-    // 3. CHECK EXISTING REVIEW (For Edit Mode)
+    // 3. CHECK EXISTING REVIEW
     public Optional<Review> getReviewByJobAndReviewer(Long jobId, Long reviewerId) {
         return reviewRepository.findByJobJobIdAndReviewerUserId(jobId, reviewerId);
     }
@@ -76,15 +76,13 @@ public class ReviewService {
         review.setRating(request.getRating());
         review.setComment(request.getComment());
 
-        // Note: We do NOT update 'reviewee' or 'job' to maintain integrity
 
         reviewRepository.saveAndFlush(review);
 
-        // Recalculate average rating
         updateUserRating(review.getReviewee());
     }
 
-    // --- HELPER: RECALCULATE AVERAGE ---
+    //  RECALCULATE AVERAGE
     private void updateUserRating(User user) {
         List<Review> reviews = reviewRepository.findByRevieweeUserId(user.getUserId());
 

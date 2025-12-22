@@ -21,8 +21,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     // 2. My Jobs
     List<Job> findByEmployer(EmployerProfile employer);
 
-    // 3. COMPLETED JOBS (FIXED WITH EXPLICIT QUERY)
-    // Bu sorgu veritabanına doğrudan "Bana bu patronun COMPLETED olan işlerini ver" der.
+    // 3. COMPLETED JOBS
     @Query("SELECT j FROM Job j WHERE j.employer = :employer AND j.status = 'COMPLETED'")
     List<Job> findCompletedJobs(@Param("employer") EmployerProfile employer);
 

@@ -7,7 +7,7 @@ import java.time.LocalDate;
 public class CreateEmployerRequest {
     private Long userId;
 
-    // User Table Fields (Editable)
+    // User table fields (editable)
     private String firstName;
     private String lastName;
     private String phoneNumber;
@@ -15,6 +15,6 @@ public class CreateEmployerRequest {
     private String gender;
     private String city;
 
-    // Employer Profile Fields
+    // Employer profile fields
     private String companyName;
 }

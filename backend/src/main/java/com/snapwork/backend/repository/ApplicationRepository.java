@@ -14,7 +14,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     // 1. Get all applications associated with a specific job
     List<Application> findByJob(Job job);
 
-    // 2. Count the number of applications for a specific job (Used for UI badges)
+    // 2. Count the number of applications for a specific job
     long countByJob(Job job);
 
     // 3. Find all applications submitted by a specific worker

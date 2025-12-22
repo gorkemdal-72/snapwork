@@ -4,7 +4,7 @@ import JobService from "../services/JobService";
 
 const EditJobPage = () => {
     const navigate = useNavigate();
-    const { jobId } = useParams(); // Get ID from URL (e.g. /edit-job/5)
+    const { jobId } = useParams();
     const [message, setMessage] = useState("");
 
     const user = JSON.parse(localStorage.getItem("user"));
@@ -23,16 +23,15 @@ const EditJobPage = () => {
         userId: user ? user.userId : null,
     });
 
-    // Load existing data when page opens
     useEffect(() => {
         if (jobId) {
             JobService.getJobById(jobId)
                 .then((response) => {
                     const job = response.data;
-                    // Pre-fill form with existing data
+
                     setFormData({
                         ...job,
-                        userId: user.userId // Ensure user ID is sent back for security check
+                        userId: user.userId
                     });
                 })
                 .catch((err) => console.error("Error loading job:", err));
@@ -50,9 +49,9 @@ const EditJobPage = () => {
 
         JobService.updateJob(jobId, formData)
             .then(() => {
-                setMessage("Job Updated Successfully! ✅ Redirecting...");
+                setMessage("Job Updated Successfully!  Redirecting...");
                 setTimeout(() => {
-                    navigate("/my-jobs"); // Go back to My Jobs
+                    navigate("/my-jobs");
                 }, 1500);
             })
             .catch((err) => {
@@ -62,7 +61,7 @@ const EditJobPage = () => {
 
     return (
         <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
-            <h2 style={{ textAlign: "center", color: "#333" }}>✏️ Edit Job</h2>
+            <h2 style={{ textAlign: "center", color: "#333" }}> Edit Job</h2>
             {message && <div style={{ color: "green", fontWeight: "bold", marginBottom: 15 }}>{message}</div>}
 
             <form onSubmit={handleSubmit} style={{ display: "grid", gap: "15px" }}>
@@ -124,7 +123,7 @@ const EditJobPage = () => {
                 </div>
 
                 <button type="submit" style={{ padding: "12px", backgroundColor: "#ffc107", color: "black", border: "none", fontSize: "1rem", cursor: "pointer", marginTop: "10px", fontWeight: "bold" }}>
-                    💾 Save Changes
+                     Save Changes
                 </button>
             </form>
         </div>

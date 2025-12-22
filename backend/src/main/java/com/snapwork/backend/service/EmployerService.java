@@ -23,12 +23,12 @@ public class EmployerService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        // 2. CHECK: Does this user already have an employer profile?
+        // 2. check if user already have employer profile
         if (employerRepository.existsByUser(user)) {
             throw new RuntimeException("You are already an Employer!");
         }
 
-        // 3. Create new Profile
+        // 3. Create new employer profile
         EmployerProfile profile = new EmployerProfile();
         profile.setUser(user);
         profile.setCompanyName(request.getCompanyName());
@@ -44,7 +44,7 @@ public class EmployerService {
         EmployerProfile profile = employerRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Profile not found!"));
 
-        // 1. UPDATE USER TABLE INFO
+        // 1. UPDATE USER TABLE
         if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
         if (request.getLastName() != null) user.setLastName(request.getLastName());
         if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
@@ -52,11 +52,10 @@ public class EmployerService {
         if (request.getBirthDate() != null) user.setBirthDate(request.getBirthDate());
         if (request.getGender() != null) user.setGender(request.getGender());
 
-        userRepository.save(user); // Save User changes
+        userRepository.save(user);
 
-        // 2. UPDATE EMPLOYER PROFILE INFO
+        // 2. UPDATE EMPLOYER PROFILE
         if (request.getCompanyName() != null) profile.setCompanyName(request.getCompanyName());
-        // Phone and City are now stored in User table primarily, but if you keep duplicates in Profile:
         if (request.getPhoneNumber() != null) profile.setPhone(request.getPhoneNumber());
         if (request.getCity() != null) profile.setCity(request.getCity());
 

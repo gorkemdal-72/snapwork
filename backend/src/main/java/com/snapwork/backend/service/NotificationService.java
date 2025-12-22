@@ -58,14 +58,12 @@ public class NotificationService {
 
     // 5. MARK ALL AS READ
     public void markAllAsRead(Long userId) {
-        // Fetch all unread notifications for this user
         List<Notification> unreadNotifications = notificationRepository.findAllByUser_UserIdAndIsReadFalse(userId);
 
         if (!unreadNotifications.isEmpty()) {
             for (Notification notification : unreadNotifications) {
                 notification.setRead(true);
             }
-            // Save all changes to database
             notificationRepository.saveAll(unreadNotifications);
         }
     }

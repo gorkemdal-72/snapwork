@@ -8,15 +8,15 @@ public class ApplicationRequest {
     private Long userId;
     private Long jobId;
 
-    // Default Form
+    // Default form
     private String coverLetter;
 
-    // Custom Answers
+    // Custom answers
     private List<FieldResponseDTO> responses;
 
     @Data
     public static class FieldResponseDTO {
-        private Long fieldId;       // Which question?
-        private String responseValue; // The answer
+        private Long fieldId;       // the question
+        private String responseValue; // the answer
     }
 }

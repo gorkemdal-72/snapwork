@@ -16,6 +16,6 @@ public class RegisterRequest {
     private LocalDate birthDate;
     private String gender;
 
-    private String companyName; // For Employer
-    private String bio;         // For Worker
+    private String companyName; // For employer
+    private String bio;         // For worker
 }

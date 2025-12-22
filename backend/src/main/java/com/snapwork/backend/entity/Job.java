@@ -22,7 +22,7 @@ public class Job {
     @Column(name = "job_id")
     private Long jobId;
 
-    // RELATIONSHIP: Many jobs can be posted by One Employer
+    // Many jobs can be posted by one employer
     // This creates 'employer_id' column in the database
     @ManyToOne
     @JoinColumn(name = "employer_id", nullable = false)
@@ -54,7 +54,7 @@ public class Job {
     @Column(name = "payment_type", nullable = false)
     private PaymentType paymentType;
 
-    // Location Info (Simplified Address)
+    // Location Info
     @Column(nullable = false)
     private String city;
 

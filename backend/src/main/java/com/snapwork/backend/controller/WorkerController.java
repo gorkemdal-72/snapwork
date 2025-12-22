@@ -17,7 +17,7 @@ public class WorkerController {
         this.workerService = workerService;
     }
 
-    // POST http://localhost:8080/api/worker/create
+    // create worker profile
     @PostMapping("/create")
     public ResponseEntity<?> createWorker(@RequestBody CreateWorkerRequest request) {
         try {
@@ -27,7 +27,7 @@ public class WorkerController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    // PUT http://localhost:8080/api/worker/update/{userId}
+    //update worker profile
     @PutMapping("/update/{userId}")
     public ResponseEntity<?> updateWorker(@PathVariable Long userId, @RequestBody com.snapwork.backend.dto.CreateWorkerRequest request) {
         try {

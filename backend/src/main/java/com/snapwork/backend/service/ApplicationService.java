@@ -36,17 +36,17 @@ public class ApplicationService {
         this.notificationService = notificationService;
     }
 
-    // 1. CREATE APPLICATION (Apply)
+    // 1. create application (apply)
     public void createApplication(ApplicationRequest request) {
-        // Validate Job existence
+        // Validate job existence
         Job job = jobRepository.findById(request.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found!"));
 
-        // Validate User existence
+        // Validate user existence
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        // Validate Worker Profile existence
+        // Validate worker profile existence
         WorkerProfile worker = workerRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Error: You must create a Worker Profile to apply!"));
 
@@ -55,7 +55,7 @@ public class ApplicationService {
             throw new RuntimeException("You cannot apply to your own job!");
         }
 
-        // Check if already applied (Optional but recommended)
+        // Check if already applied
         if (applicationRepository.existsByJobAndWorker(job, worker)) {
             throw new RuntimeException("You have already applied for this job!");
         }
@@ -64,14 +64,13 @@ public class ApplicationService {
         application.setJob(job);
         application.setWorker(worker);
 
-        // CHANGE: Direct assignment! No need for .name() because Entity uses Enum.
         application.setStatus(JobStatus.PENDING);
 
         application.setCoverLetter(request.getCoverLetter());
 
         Application savedApp = applicationRepository.save(application);
 
-        // Save Custom Field Responses (Screening Questions)
+        // save custom field responses
         if (request.getResponses() != null) {
             for (ApplicationRequest.FieldResponseDTO dto : request.getResponses()) {
                 CustomField question = customFieldRepository.findById(dto.getFieldId())
@@ -85,7 +84,7 @@ public class ApplicationService {
             }
         }
 
-        // --- NOTIFICATION TRIGGER: Notify Employer ---
+        // NOTIFICATION TRIGGER
         String msg = "New Application: " + worker.getUser().getFirstName() + " " + worker.getUser().getLastName() + " applied for '" + job.getTitle() + "'";
         Long employerUserId = job.getEmployer().getUser().getUserId();
         String url = "/job-applications/" + job.getJobId();
@@ -93,21 +92,19 @@ public class ApplicationService {
         notificationService.sendNotification(employerUserId, msg, url);
     }
 
-    // 2. UPDATE STATUS (Accept/Reject)
+    // 2. UPDATE STATUS (Accept or Reject)
     public void updateApplicationStatus(Long applicationId, String status) {
         // 1. Find application
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found with id: " + applicationId));
 
-        // 2. Convert String status to Enum and set directly
         try {
-            // Converts "accepted" -> JobStatus.ACCEPTED
             app.setStatus(JobStatus.valueOf(status.toUpperCase()));
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid status: " + status);
         }
 
-        // 3. Save (JPA automatically converts Enum to String for DB)
+        // 3. Save
         applicationRepository.save(app);
     }
 
@@ -137,7 +134,7 @@ public class ApplicationService {
         ApplicationDetailsDTO dto = new ApplicationDetailsDTO();
         dto.setCoverLetter(application.getCoverLetter());
 
-        // Map Question & Answers
+        // Map Question and Answers
         List<ApplicationDetailsDTO.QuestionAnswer> qaList = fieldResponses.stream().map(fr -> {
             ApplicationDetailsDTO.QuestionAnswer qa = new ApplicationDetailsDTO.QuestionAnswer();
             qa.setQuestion(fr.getCustomField().getQuestion());

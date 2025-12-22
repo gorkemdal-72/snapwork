@@ -155,11 +155,10 @@ const JobApplicationsPage = () => {
     return (
         <div style={{ maxWidth: "900px", margin: "30px auto", padding: "20px" }}>
 
-            {/* Remove default sweetalert icon border */}
             <style>{`.swal2-icon.border-none { border: none !important; }`}</style>
 
             <button onClick={() => navigate(-1)} style={{ marginBottom: 20, border: "none", background: "none", color: "#007bff", cursor: "pointer" }}>← Back to Jobs</button>
-            <h2 style={{ textAlign: "center", color: "#2c3e50" }}>📄 Applicant Management</h2>
+            <h2 style={{ textAlign: "center", color: "#2c3e50" }}> Applicant Management</h2>
 
             <div style={{ display: "grid", gap: "15px", marginTop: "20px" }}>
                 {applications.map((app) => (
@@ -222,7 +221,7 @@ const JobApplicationsPage = () => {
                                     fontSize: "0.8rem"
                                 }}
                             >
-                                👁️ View Application Form
+                                 View Application Form
                             </button>
                         </div>
 
@@ -255,7 +254,7 @@ const JobApplicationsPage = () => {
                         {/* Price Offer Section */}
                         {selectedApplication.proposedPrice && (
                             <div style={{ marginBottom: "20px", padding: "10px", border: "1px solid #d63384", borderRadius: "5px", backgroundColor: "rgba(214, 51, 132, 0.1)" }}>
-                                <h4 style={{ margin: "0 0 5px 0", color: "#d63384" }}>💰 New Price Offer</h4>
+                                <h4 style={{ margin: "0 0 5px 0", color: "#d63384" }}> New Price Offer</h4>
                                 <span style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#d63384" }}>
                                     {selectedApplication.proposedPrice} ₺
                                 </span>
@@ -264,7 +263,7 @@ const JobApplicationsPage = () => {
 
                         {/* Cover Letter Section */}
                         <div style={{ marginBottom: "20px" }}>
-                            <h4 style={{ marginBottom: "5px", color: "#007bff" }}>📝 Cover Letter</h4>
+                            <h4 style={{ marginBottom: "5px", color: "#007bff" }}> Cover Letter</h4>
                             <div style={{ backgroundColor: "#f8f9fa", color: "#333", padding: "15px", borderRadius: "5px", border: "1px solid #ddd", whiteSpace: "pre-wrap" }}>
                                 {parsedData.letter || "No cover letter provided."}
                             </div>
@@ -273,7 +272,7 @@ const JobApplicationsPage = () => {
                         {/* Q&A Section (Only if questions exist) */}
                         {parsedData.questions.length > 0 && (
                             <div style={{ marginTop: "20px" }}>
-                                <h4 style={{ marginBottom: "10px", color: "#28a745" }}>❓ Screening Responses</h4>
+                                <h4 style={{ marginBottom: "10px", color: "#28a745" }}> Screening Responses</h4>
                                 {parsedData.questions.map((qa, idx) => (
                                     <div key={idx} style={{ marginBottom: "10px", padding: "10px", border: "1px solid #eee", borderRadius: "5px", backgroundColor: "#fff" }}>
                                         <p style={{ fontWeight: "bold", margin: "0 0 5px 0", fontSize: "0.9rem", color: "#555" }}>

@@ -15,19 +15,19 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
-    // GET List
+    // get all notification
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getMyNotifications(@PathVariable Long userId) {
         return ResponseEntity.ok(notificationService.getMyNotifications(userId));
     }
 
-    // GET Count
+    // get unread notification count
     @GetMapping("/user/{userId}/count")
     public ResponseEntity<?> getUnreadCount(@PathVariable Long userId) {
         return ResponseEntity.ok(notificationService.getUnreadCount(userId));
     }
 
-    // PUT Mark Single Notification as Read
+    // mark one notificaiton as read
     @PutMapping("/{notificationId}/read")
     public ResponseEntity<?> markAsRead(@PathVariable Long notificationId) {
         try {
@@ -38,7 +38,7 @@ public class NotificationController {
         }
     }
 
-    // PUT Mark All as Read
+    // mark all notificaiton as read
     @PutMapping("/read-all/{userId}")
     public ResponseEntity<String> markAllAsRead(@PathVariable Long userId) {
         notificationService.markAllAsRead(userId);

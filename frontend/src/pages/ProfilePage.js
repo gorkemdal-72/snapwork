@@ -73,10 +73,8 @@ const ProfilePage = () => {
                 {/* EMPLOYER CARD */}
                 {profileData.hasEmployerProfile && (
                     <div style={{ padding: "20px", backgroundColor: "#e3f2fd", borderRadius: "10px", border: "1px solid #bbdefb" }}>
-                        <div style={{ fontSize: "2rem", marginBottom: "5px" }}>👔</div>
+                        <div style={{ fontSize: "2rem", marginBottom: "5px" }}></div>
                         <h3 style={{ margin: "5px 0", color: "#0d47a1" }}>Employer Profile</h3>
-                        <p style={{ color: "green", fontWeight: "bold", fontSize: "0.9rem" }}>✅ Active</p>
-
                         {profileData.employerProfile && (
                             <div style={{ marginTop: "15px", textAlign: "left", padding: "0 15px" }}>
                                 <p><strong>Company:</strong> {profileData.employerProfile.companyName}</p>
@@ -89,9 +87,8 @@ const ProfilePage = () => {
                 {/* WORKER CARD */}
                 {profileData.hasWorkerProfile && (
                     <div style={{ padding: "20px", backgroundColor: "#e8f5e9", borderRadius: "10px", border: "1px solid #c8e6c9" }}>
-                        <div style={{ fontSize: "2rem", marginBottom: "5px" }}>👷</div>
+                        <div style={{ fontSize: "2rem", marginBottom: "5px" }}></div>
                         <h3 style={{ margin: "5px 0", color: "#1b5e20" }}>Worker Profile</h3>
-                        <p style={{ color: "green", fontWeight: "bold", fontSize: "0.9rem" }}>✅ Active</p>
 
                         {profileData.workerProfile && (
                             <div style={{ marginTop: "15px", textAlign: "left", padding: "0 15px" }}>
@@ -111,7 +108,7 @@ const ProfilePage = () => {
                     width: "100%", padding: "12px", backgroundColor: "#ffc107", color: "black",
                     border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer"
                 }}>
-                    ✏️ Edit Profile
+                     Edit Profile
                 </button>
 
                 <button onClick={handleLogout} style={{

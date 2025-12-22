@@ -55,7 +55,7 @@ const NotificationsPage = () => {
         Swal.fire({
             title: 'Mark all as read?',
             text: "All unread notifications will be marked as read.",
-            iconHtml: '❓',
+            iconHtml: '',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
@@ -71,7 +71,7 @@ const NotificationsPage = () => {
                         Swal.fire({
                             title: 'Success!',
                             text: 'All notifications marked as read.',
-                            iconHtml: '✅',
+                            iconHtml: '',
                             timer: 1500,
                             showConfirmButton: false,
                             ...swalOptions
@@ -92,7 +92,7 @@ const NotificationsPage = () => {
                         Swal.fire({
                             title: 'Failed!',
                             text: errorMessage, // Hatanın tam sebebini ekrana basar
-                            iconHtml: '❌',
+                            iconHtml: '',
                             ...swalOptions
                         });
                     });
@@ -127,7 +127,7 @@ const NotificationsPage = () => {
                             transition: "background 0.2s"
                         }}
                     >
-                        ✅ Mark All Read
+                         Mark All Read
                     </button>
                 )}
             </div>

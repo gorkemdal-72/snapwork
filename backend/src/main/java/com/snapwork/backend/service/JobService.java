@@ -55,8 +55,7 @@ public class JobService {
         job.setCity(request.getCity());
         job.setDistrict(request.getDistrict());
         job.setStreetAndBuilding(request.getStreetAndBuilding());
-        // Default status is usually set in Entity or Constructor, but can be set here if needed:
-        // job.setStatus(JobStatus.OPEN);
+        job.setStatus(JobStatus.OPEN);
 
         Job savedJob = jobRepository.save(job);
 
@@ -136,7 +135,7 @@ public class JobService {
 
     // 7. MARK JOB AS COMPLETED
     public void completeJob(Long jobId, Long userId) {
-        // Validation: Ensure the user owns the job
+        // Ensure the user owns the job
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
@@ -145,25 +144,24 @@ public class JobService {
         }
 
         // Call the stored procedure to close the job
+        //STORED PROCEDURE
         jobRepository.completeJobManually(jobId);
     }
 
 
-    // 8. GET COMPLETED JOBS (Employer & Worker)
+    // 8. GET COMPLETED JOBS (Employer and  Worker)
     public List<Job> getCompletedJobs(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
         List<Job> completedJobs = new ArrayList<>();
 
-        // Fetch jobs where user was the Employer
         Optional<EmployerProfile> employer = employerProfileRepository.findByUser(user);
         if (employer.isPresent()) {
             List<Job> employerJobs = jobRepository.findCompletedJobs(employer.get());
             completedJobs.addAll(employerJobs);
         }
 
-        // Fetch jobs where user was the Worker
         Optional<WorkerProfile> worker = workerProfileRepository.findByUser(user);
         if (worker.isPresent()) {
             List<Application> applications = applicationRepository.findByWorker(worker.get());
@@ -239,12 +237,11 @@ public class JobService {
         app.setJob(job);
         app.setWorker(worker);
 
-        // FIXED: Using Enum directly
         app.setStatus(JobStatus.PENDING);
 
         app.setCoverLetter(request.getCoverLetter());
 
-        // Set Proposed Price (If provided)
+        // Set Proposed Price
         app.setProposedPrice(request.getProposedPrice());
 
         applicationRepository.save(app);

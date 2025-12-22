@@ -17,7 +17,7 @@ public class EmployerController {
         this.employerService = employerService;
     }
 
-    // POST http://localhost:8080/api/employer/create
+    // create new employer profile
     @PostMapping("/create")
     public ResponseEntity<?> createEmployer(@RequestBody CreateEmployerRequest request) {
         try {
@@ -28,7 +28,7 @@ public class EmployerController {
         }
     }
 
-    // PUT http://localhost:8080/api/employer/update/{userId}
+    // update employer profile
     @PutMapping("/update/{userId}")
     public ResponseEntity<?> updateEmployer(@PathVariable Long userId, @RequestBody CreateEmployerRequest request) {
         try {

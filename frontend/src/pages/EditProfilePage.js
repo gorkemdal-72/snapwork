@@ -53,10 +53,6 @@ const EditProfilePage = () => {
                 setLoading(false);
             })
             .catch(err => console.error("Error fetching profile:", err));
-
-        // --- DÜZELTME BURADA ---
-        // [user] yerine [user.userId] yazdık. Artık sadece ID değişirse çalışacak.
-        // Böylece sen yazı yazarken sayfa yenilenip durmayacak.
     }, [user.userId, navigate]);
 
     const handleChange = (e) => {

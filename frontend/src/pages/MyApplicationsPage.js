@@ -35,7 +35,7 @@ const MyApplicationsPage = () => {
                     fontSize: "0.8rem",
                     border: "1px solid #555"
                 }}>
-                    🚫 JOB CANCELLED
+                     JOB CANCELLED
                 </span>
             );
         }
@@ -44,10 +44,10 @@ const MyApplicationsPage = () => {
 
         if (appStatus === "ACCEPTED") {
             color = "#28a745"; // Green
-            text = "✅ ACCEPTED";
+            text = " ACCEPTED";
         } else if (appStatus === "REJECTED") {
             color = "#dc3545"; // Red
-            text = "❌ REJECTED";
+            text = " REJECTED";
         }
         else if (appStatus === "CANCELED") {
             color = "#dc3545"; // Red
@@ -72,7 +72,7 @@ const MyApplicationsPage = () => {
 
     return (
         <div style={{ maxWidth: "800px", margin: "30px auto", padding: "20px" }}>
-            <h2 style={{ textAlign: "center", color: "#2c3e50", marginBottom: 30 }}>📄 My Applications</h2>
+            <h2 style={{ textAlign: "center", color: "#2c3e50", marginBottom: 30 }}> My Applications</h2>
 
             {applications.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "40px", backgroundColor: "#f9f9f9", borderRadius: "10px" }}>
@@ -89,7 +89,7 @@ const MyApplicationsPage = () => {
                             <div>
                                 <h3 style={{ margin: "0 0 5px 0", color: "#007bff" }}>{app.job.title}</h3>
                                 <p style={{ margin: 0, color: "#555" }}>
-                                    🏢 {app.job.employer.companyName}
+                                     {app.job.employer.companyName}
                                 </p>
                                 <p style={{ margin: "5px 0 0 0", fontSize: "0.9rem", color: "#888" }}>
                                     Applied on: {new Date(app.appliedAt).toLocaleDateString()}

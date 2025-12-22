@@ -6,7 +6,6 @@ const CreateJobPage = () => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user"));
 
-    // Çift tıklamayı engellemek için bu state'i ekledik
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [message, setMessage] = useState("");
@@ -48,10 +47,9 @@ const CreateJobPage = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Eğer zaten gönderiliyorsa durdur
         if (isSubmitting) return;
 
-        setIsSubmitting(true); // Butonu kilitle
+        setIsSubmitting(true);
         setMessage("");
         setError("");
 
@@ -67,22 +65,19 @@ const CreateJobPage = () => {
             .catch((err) => {
                 const resMessage = (err.response && err.response.data && err.response.data.message) || err.message;
                 setError("Error: " + resMessage);
-                setIsSubmitting(false); // Hata alırsa butonu tekrar aç
+                setIsSubmitting(false);
             });
     };
 
     return (
         <div style={{ maxWidth: "700px", margin: "20px auto", padding: "20px" }}>
-            <h2 style={{ textAlign: "center" }}>📝 Post a Job</h2>
+            <h2 style={{ textAlign: "center" }}> Post a Job</h2>
 
             {message && <div style={{ backgroundColor: "#d4edda", color: "#155724", padding: "10px", marginBottom: "10px", textAlign: "center" }}>✅ {message}</div>}
             {error && <div style={{ backgroundColor: "#f8d7da", color: "#721c24", padding: "10px", marginBottom: "10px", textAlign: "center" }}>❌ {error}</div>}
 
             <form onSubmit={handleSubmit} style={{ display: "grid", gap: "15px" }}>
-                {/* ... (DİĞER INPUT ALANLARI AYNI KALSIN - Title, Desc, Location vs.) ... */}
 
-                {/* Kısa olması için sadece Screen Questions kısmını ve butonu gösteriyorum */}
-                {/* Buradaki 'Job Details' ve 'Time & Location' kısımlarını silme, olduğu gibi kalsın */}
                 <div style={{ padding: "15px", border: "1px solid #ddd", borderRadius: "8px", backgroundColor: "white" }}>
                     <h3>Job Details</h3>
                     <label>Title:</label>
@@ -113,7 +108,7 @@ const CreateJobPage = () => {
 
 
                 <div style={{ padding: "15px", border: "1px solid #007bff", borderRadius: "8px", backgroundColor: "#f0f8ff" }}>
-                    <h3>❓ Screening Questions</h3>
+                    <h3> Screening Questions</h3>
                     {customFields.map((field, index) => (
                         <div key={index} style={{ marginBottom: "10px", borderBottom: "1px solid #ccc", paddingBottom: "10px" }}>
                             <div style={{ display: "flex", gap: "10px" }}>
@@ -148,7 +143,7 @@ const CreateJobPage = () => {
                         cursor: isSubmitting ? "not-allowed" : "pointer"
                     }}
                 >
-                    {isSubmitting ? "Posting..." : "🚀 Publish Job"}
+                    {isSubmitting ? "Posting..." : " Publish Job"}
                 </button>
             </form>
         </div>

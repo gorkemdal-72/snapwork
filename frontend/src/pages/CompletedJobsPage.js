@@ -32,7 +32,7 @@ const CompletedJobsPage = () => {
 
         console.log(">>> DEBUG: Opening review modal for Job ID:", job.jobId);
 
-        // Step 1: Check if a review already exists (Edit Mode)
+        // Check if a review already exists
         try {
             const existingReviewRes = await JobService.getMyReview(job.jobId, user.userId);
             if (existingReviewRes.data) {
@@ -44,29 +44,28 @@ const CompletedJobsPage = () => {
                 setComment(r.comment);
                 setEditingReviewId(r.reviewId);
 
-                // CRITICAL: Set the target user ID from the existing review
+                // Set the target user id from the existing review
                 if (r.reviewee && r.reviewee.userId) {
                     setTargetUserId(r.reviewee.userId);
                 }
 
                 setShowModal(true);
-                return; // Stop here, no need to calculate target ID again
+                return;
             }
         } catch (err) {
-            // No existing review found, proceed to Create Mode
             console.log("No existing review found. Switching to Create Mode.");
         }
 
-        // Step 2: Determine Target User ID (Create Mode)
+        // Determine Target User id
         let targetId = null;
 
         if (user.role === "WORKER") {
-            // If I am a Worker, I rate the Employer
+            // worker rate employer
             if (job.employer && job.employer.user) {
                 targetId = job.employer.user.userId;
             }
         } else if (user.role === "EMPLOYER") {
-            // If I am an Employer, I rate the Worker (Must find the accepted applicant)
+            // employer rate worker
             try {
                 const res = await JobService.getJobApplications(job.jobId);
                 const acceptedApp = res.data.find(app => app.status === "ACCEPTED");
@@ -130,7 +129,7 @@ const CompletedJobsPage = () => {
 
     return (
         <div style={{ maxWidth: "800px", margin: "20px auto", padding: "20px" }}>
-            <h2 style={{ textAlign: "center", color: "#2c3e50", marginBottom: 30 }}>✅ Completed Jobs History</h2>
+            <h2 style={{ textAlign: "center", color: "#2c3e50", marginBottom: 30 }}> Completed Jobs History</h2>
 
             {jobs.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "40px", backgroundColor: "#f9f9f9", borderRadius: "10px" }}>
@@ -158,7 +157,7 @@ const CompletedJobsPage = () => {
                                         boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
                                     }}
                                 >
-                                    ⭐ Rate & Review
+                                     Rate & Review
                                 </button>
                             </div>
                         </div>
@@ -171,7 +170,7 @@ const CompletedJobsPage = () => {
                 <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }}>
                     <div style={{ backgroundColor: "white", padding: "30px", borderRadius: "10px", width: "400px", boxShadow: "0 5px 15px rgba(0,0,0,0.2)" }}>
                         <h3 style={{ marginTop: 0, color: "#333" }}>
-                            {editingReviewId ? "✏️ Edit Review" : "⭐ Write a Review"}
+                            {editingReviewId ? "✏ Edit Review" : " Write a Review"}
                         </h3>
 
                         <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "15px" }}>

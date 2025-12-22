@@ -12,7 +12,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     // Find all reviews received by a specific user
     List<Review> findByRevieweeUserId(Long userId);
 
-    // Check if review already exists for this job by this user (Prevent double review)
+    // Check if review already exists for this job by this user
     boolean existsByJobJobIdAndReviewerUserId(Long jobId, Long reviewerId);
 
     Optional<Review> findByJobJobIdAndReviewerUserId(Long jobId, Long reviewerId);

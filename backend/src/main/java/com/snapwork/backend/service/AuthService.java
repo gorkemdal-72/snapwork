@@ -26,14 +26,14 @@ public class AuthService {
         this.workerRepository = workerRepository;
     }
 
-    // 1. REGISTER METHOD (UPDATED & FIXED)
+    // 1. REGISTER METHOD
     public User register(RegisterRequest request) {
         // Check if email exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already in use!");
         }
 
-        // Create Base User
+        // Create User
         User newUser = new User();
         newUser.setFirstName(request.getFirstName());
         newUser.setLastName(request.getLastName());
@@ -47,9 +47,8 @@ public class AuthService {
         User savedUser = userRepository.save(newUser);
 
         String role = request.getRole();
-
+        // default
         if (role == null || role.isEmpty()) {
-            // Default to Worker if role is missing (Safety net)
             role = "worker";
         }
 
@@ -76,10 +75,10 @@ public class AuthService {
     // 2. LOGIN METHOD
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found! ❌"));
+                .orElseThrow(() -> new RuntimeException("User not found! "));
 
         if (!user.getPasswordHash().equals(request.getPassword())) {
-            throw new RuntimeException("Wrong password! ❌");
+            throw new RuntimeException("Wrong password! ");
         }
 
         String role = "NONE";

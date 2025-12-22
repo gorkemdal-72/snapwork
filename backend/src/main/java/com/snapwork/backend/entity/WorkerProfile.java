@@ -13,7 +13,7 @@ public class WorkerProfile {
     @Column(name = "worker_id")
     private Long workerId;
 
-    // Relationship: One User can have One Worker Profile
+    // One user can have one worker profile
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;

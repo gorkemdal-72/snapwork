@@ -26,7 +26,6 @@ public class Application {
     @JoinColumn(name = "worker_id", nullable = false)
     private WorkerProfile worker;
 
-    // CHANGE: Used @Enumerated to handle String conversion automatically
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private JobStatus status = JobStatus.PENDING; // Default status is PENDING
