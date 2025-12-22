@@ -45,7 +45,7 @@ const JobDashboardCard = ({ job, onDelete, onComplete, onCancel }) => {
                 </button>
 
                 <button onClick={() => navigate(`/edit-job/${job.jobId}`)} style={{ padding: "8px 15px", backgroundColor: "#fff3cd", color: "#856404", border: "1px solid #ffeeba", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
-                    ✏ Edit
+                    Edit
                 </button>
 
                 {job.status === 'OPEN' && (
@@ -58,7 +58,7 @@ const JobDashboardCard = ({ job, onDelete, onComplete, onCancel }) => {
                 )}
 
                 <button onClick={() => onDelete(job.jobId)} style={{ padding: "8px 15px", backgroundColor: "#f8d7da", color: "#721c24", border: "1px solid #f5c6cb", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
-                    🗑 Delete
+                     Delete
                 </button>
 
                 <button

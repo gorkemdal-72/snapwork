@@ -1,164 +1,116 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NotificationService from "../services/NotificationService";
-import Swal from "sweetalert2";
+import { useNotification } from "../context/NotificationContext";
 
 const NotificationsPage = () => {
     const [notifications, setNotifications] = useState([]);
+    const user = JSON.parse(localStorage.getItem("user"));
     const navigate = useNavigate();
 
-    // Kullanıcı bilgisini güvenli al
-    const userString = localStorage.getItem("user");
-    const user = userString ? JSON.parse(userString) : null;
-
-    const swalOptions = {
-        showClass: { popup: '', backdrop: '' },
-        hideClass: { popup: '' }
-    };
+    const { refreshNotifications } = useNotification();
 
     useEffect(() => {
-        if (user && user.userId) {
-            // Fonksiyonu useEffect içine taşıyarak uyarıyı çözdük
-            const fetchNotifications = () => {
-                NotificationService.getMyNotifications(user.userId)
-                    .then(res => setNotifications(res.data))
-                    .catch(err => console.error("Load Error:", err));
-            };
+        loadNotifications();
+    }, []);
 
-            fetchNotifications();
+    const loadNotifications = () => {
+        if (user) {
+            NotificationService.getMyNotifications(user.userId)
+                .then(res => setNotifications(res.data))
+                .catch(err => console.error(err));
         }
-    }, [user.userId]); // Artık dependency array doğru
+    };
 
-    const handleNotificationClick = (notif) => {
-        if (!notif.read) {
-            NotificationService.markAsRead(notif.notificationId)
+    // Mark as read (Update UI + Backend + Badge)
+    const handleMarkAsRead = (notificationId) => {
+        NotificationService.markAsRead(notificationId)
+            .then(() => {
+                const updatedList = notifications.map(n =>
+                    n.notificationId === notificationId ? { ...n, read: true } : n
+                );
+                setNotifications(updatedList);
+                refreshNotifications();
+            })
+            .catch(err => console.error(err));
+    };
+
+    const handleMarkAllAsRead = () => {
+        if (user) {
+            NotificationService.markAllAsRead(user.userId)
                 .then(() => {
-                    setNotifications(prev => prev.map(n =>
-                        n.notificationId === notif.notificationId ? { ...n, read: true } : n
-                    ));
+                    const updatedList = notifications.map(n => ({ ...n, read: true }));
+                    setNotifications(updatedList);
+                    refreshNotifications();
                 })
                 .catch(err => console.error(err));
         }
+    };
+
+    // HANDLE CLICK: Mark as read & Navigate
+    const handleNotificationClick = (notif) => {
+        // 1. Mark as read if unread
+        if (!notif.read) {
+            handleMarkAsRead(notif.notificationId);
+        }
+
+        // 2. Navigate if URL exists
         if (notif.targetUrl) {
             navigate(notif.targetUrl);
         }
     };
 
-    const handleMarkAllRead = () => {
-        if (!user || !user.userId) {
-            alert("User ID not found!");
-            return;
-        }
-
-        console.log("Sending request for User ID:", user.userId); // Konsola ID'yi yazdır
-
-        Swal.fire({
-            title: 'Mark all as read?',
-            text: "All unread notifications will be marked as read.",
-            iconHtml: '',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, mark all',
-            ...swalOptions
-        }).then((result) => {
-            if (result.isConfirmed) {
-                NotificationService.markAllAsRead(user.userId)
-                    .then(() => {
-                        // Başarılı olursa listeyi güncelle
-                        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'All notifications marked as read.',
-                            iconHtml: '',
-                            timer: 1500,
-                            showConfirmButton: false,
-                            ...swalOptions
-                        });
-                    })
-                    .catch(err => {
-                        console.error("FULL ERROR:", err);
-
-                        // HATA DETAYINI ALALIM
-                        let errorMessage = "Connection error";
-                        if (err.response) {
-                            // Backend bir cevap döndü (404, 500 vs.)
-                            errorMessage = `Error ${err.response.status}: ${err.response.statusText}`;
-                        } else if (err.message) {
-                            errorMessage = err.message;
-                        }
-
-                        Swal.fire({
-                            title: 'Failed!',
-                            text: errorMessage, // Hatanın tam sebebini ekrana basar
-                            iconHtml: '',
-                            ...swalOptions
-                        });
-                    });
-            }
-        });
-    };
-
     return (
-        <div style={{ maxWidth: "600px", margin: "20px auto", padding: "20px" }}>
-            <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "20px",
-                borderBottom: "1px solid #eee",
-                paddingBottom: "10px"
-            }}>
-                <h2 style={{ margin: 0, color: "#2c3e50" }}>🔔 Notifications</h2>
-
-                {notifications.length > 0 && (
-                    <button
-                        onClick={handleMarkAllRead}
-                        style={{
-                            backgroundColor: "#f8f9fa",
-                            border: "1px solid #ddd",
-                            color: "#555",
-                            padding: "8px 12px",
-                            borderRadius: "5px",
-                            cursor: "pointer",
-                            fontWeight: "bold",
-                            fontSize: "0.85rem",
-                            transition: "background 0.2s"
-                        }}
-                    >
-                         Mark All Read
-                    </button>
-                )}
+        <div style={{ maxWidth: "800px", margin: "20px auto" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <h2>Notifications</h2>
+                <button
+                    onClick={handleMarkAllAsRead}
+                    style={{ padding: "8px 12px", backgroundColor: "#333", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                >
+                    Mark All as Read
+                </button>
             </div>
 
             {notifications.length === 0 ? (
                 <p style={{ textAlign: "center", color: "#777" }}>No notifications yet.</p>
             ) : (
-                <div style={{ display: "grid", gap: "10px" }}>
+                <ul style={{ listStyle: "none", padding: 0 }}>
                     {notifications.map((notif) => (
-                        <div
+                        <li
                             key={notif.notificationId}
                             onClick={() => handleNotificationClick(notif)}
                             style={{
                                 padding: "15px",
-                                borderRadius: "8px",
-                                borderLeft: notif.read ? "5px solid #ccc" : "5px solid #007bff",
-                                backgroundColor: notif.read ? "#f9f9f9" : "#e3f2fd",
+                                marginBottom: "10px", // Add spacing between items
+                                border: "1px solid #eee",
+                                borderRadius: "8px", // Rounded corners
+                                backgroundColor: notif.read ? "#fff" : "#e3f2fd", // Distinct color for unread
                                 cursor: "pointer",
-                                transition: "0.2s",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
+                                transition: "all 0.2s",
+                                display: "flex",
+                                flexDirection: "column"
                             }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = notif.read ? "#f9f9f9" : "#d1e9fc"}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = notif.read ? "#fff" : "#e3f2fd"}
                         >
-                            <p style={{ margin: 0, fontWeight: notif.read ? "normal" : "bold", color: "#333" }}>
-                                {notif.message}
-                            </p>
-                            <small style={{ color: "#888" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <p style={{ margin: "0 0 5px 0", fontWeight: notif.read ? "normal" : "bold", color: "#333", fontSize: "1rem" }}>
+                                    {notif.message}
+                                </p>
+                                {!notif.read && (
+                                    <span style={{ fontSize: "0.7rem", backgroundColor: "#007bff", color: "white", padding: "2px 6px", borderRadius: "4px" }}>
+                                        NEW
+                                    </span>
+                                )}
+                            </div>
+
+                            <small style={{ color: "#888", marginTop: "5px" }}>
                                 {new Date(notif.createdAt).toLocaleString()}
                             </small>
-                        </div>
+                        </li>
                     ))}
-                </div>
+                </ul>
             )}
         </div>
     );

@@ -36,17 +36,17 @@ public class ApplicationService {
         this.notificationService = notificationService;
     }
 
-    // 1. create application (apply)
+    // 1. CREATE APPLICATION (Apply)
     public void createApplication(ApplicationRequest request) {
-        // Validate job existence
+        // Validate Job existence
         Job job = jobRepository.findById(request.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found!"));
 
-        // Validate user existence
+        // Validate User existence
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        // Validate worker profile existence
+        // Validate Worker Profile existence
         WorkerProfile worker = workerRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Error: You must create a Worker Profile to apply!"));
 
@@ -55,7 +55,7 @@ public class ApplicationService {
             throw new RuntimeException("You cannot apply to your own job!");
         }
 
-        // Check if already applied
+        // Check if already applied (Optional but recommended)
         if (applicationRepository.existsByJobAndWorker(job, worker)) {
             throw new RuntimeException("You have already applied for this job!");
         }
@@ -64,13 +64,14 @@ public class ApplicationService {
         application.setJob(job);
         application.setWorker(worker);
 
+        // Set Enum status directly
         application.setStatus(JobStatus.PENDING);
 
         application.setCoverLetter(request.getCoverLetter());
 
         Application savedApp = applicationRepository.save(application);
 
-        // save custom field responses
+        // Save Custom Field Responses
         if (request.getResponses() != null) {
             for (ApplicationRequest.FieldResponseDTO dto : request.getResponses()) {
                 CustomField question = customFieldRepository.findById(dto.getFieldId())
@@ -84,28 +85,46 @@ public class ApplicationService {
             }
         }
 
-        // NOTIFICATION TRIGGER
+        // --- NOTIFICATION TRIGGER 1: Notify Employer ---
         String msg = "New Application: " + worker.getUser().getFirstName() + " " + worker.getUser().getLastName() + " applied for '" + job.getTitle() + "'";
         Long employerUserId = job.getEmployer().getUser().getUserId();
+
+        // Target URL: Applicants Page
         String url = "/job-applications/" + job.getJobId();
 
         notificationService.sendNotification(employerUserId, msg, url);
     }
 
-    // 2. UPDATE STATUS (Accept or Reject)
+    // 2. UPDATE STATUS (Accept/Reject)
+    // NOW WITH NOTIFICATION!
     public void updateApplicationStatus(Long applicationId, String status) {
         // 1. Find application
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found with id: " + applicationId));
 
+        // 2. Convert String status to Enum and set
         try {
-            app.setStatus(JobStatus.valueOf(status.toUpperCase()));
+            JobStatus statusEnum = JobStatus.valueOf(status.toUpperCase());
+            app.setStatus(statusEnum);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid status: " + status);
         }
 
-        // 3. Save
+        // 3. Save (Standard JPA update)
         applicationRepository.save(app);
+
+        // --- NOTIFICATION TRIGGER 2: Notify Worker (NEW) ---
+        // This part was missing! Now the worker gets notified.
+        String jobTitle = app.getJob().getTitle();
+        String statusMessage = status.equalsIgnoreCase("ACCEPTED") ? "Accepted! 🎉" : "Rejected.";
+
+        String msg = "Your application for '" + jobTitle + "' has been " + statusMessage;
+        Long workerUserId = app.getWorker().getUser().getUserId();
+
+        // Target URL: My Applications Page
+        String url = "/my-applications/" + workerUserId;
+
+        notificationService.sendNotification(workerUserId, msg, url);
     }
 
     public List<Application> getApplicationsByJobId(Long jobId) {
@@ -134,7 +153,6 @@ public class ApplicationService {
         ApplicationDetailsDTO dto = new ApplicationDetailsDTO();
         dto.setCoverLetter(application.getCoverLetter());
 
-        // Map Question and Answers
         List<ApplicationDetailsDTO.QuestionAnswer> qaList = fieldResponses.stream().map(fr -> {
             ApplicationDetailsDTO.QuestionAnswer qa = new ApplicationDetailsDTO.QuestionAnswer();
             qa.setQuestion(fr.getCustomField().getQuestion());

@@ -16,16 +16,25 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final WorkerProfileRepository workerRepository;
     private final EmployerProfileRepository employerRepository;
+    // EKLENDİ: Bildirim servisi
+    private final NotificationService notificationService;
 
-    public ReviewService(ReviewRepository reviewRepository, JobRepository jobRepository, UserRepository userRepository, WorkerProfileRepository workerRepository, EmployerProfileRepository employerRepository) {
+    public ReviewService(ReviewRepository reviewRepository,
+                         JobRepository jobRepository,
+                         UserRepository userRepository,
+                         WorkerProfileRepository workerRepository,
+                         EmployerProfileRepository employerRepository,
+                         NotificationService notificationService) { // EKLENDİ
         this.reviewRepository = reviewRepository;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
         this.workerRepository = workerRepository;
         this.employerRepository = employerRepository;
+        this.notificationService = notificationService; // EKLENDİ
     }
 
     // 1. CREATE REVIEW
+    // Creates a new review and sends a notification to the reviewee.
     public void createReview(ReviewRequest request) {
         // Check for duplicates
         if (reviewRepository.existsByJobJobIdAndReviewerUserId(request.getJobId(), request.getReviewerId())) {
@@ -49,8 +58,17 @@ public class ReviewService {
         review.setComment(request.getComment());
 
         reviewRepository.saveAndFlush(review);
+
         // Update average rating for the reviewed user
         updateUserRating(reviewee);
+
+        // --- EKLENEN KISIM: Yorum yapılan kişiye bildirim gönder ---
+        String msg = "New Review: " + reviewer.getFirstName() + " " + reviewer.getLastName() + " gave you " + request.getRating() + " stars.";
+        // Bildirime tıklayınca profiline gitsin
+        String url = "/profile/" + reviewee.getUserId();
+
+        notificationService.sendNotification(reviewee.getUserId(), msg, url);
+        // -----------------------------------------------------------
     }
 
     // 2. GET REVIEWS FOR A USER
@@ -58,7 +76,7 @@ public class ReviewService {
         return reviewRepository.findByRevieweeUserId(userId);
     }
 
-    // 3. CHECK EXISTING REVIEW
+    // 3. CHECK EXISTING REVIEW (For Edit Mode)
     public Optional<Review> getReviewByJobAndReviewer(Long jobId, Long reviewerId) {
         return reviewRepository.findByJobJobIdAndReviewerUserId(jobId, reviewerId);
     }
@@ -79,10 +97,18 @@ public class ReviewService {
 
         reviewRepository.saveAndFlush(review);
 
+        // Recalculate average rating
         updateUserRating(review.getReviewee());
+        User reviewer = review.getReviewer();
+        User reviewee = review.getReviewee();
+
+        String msg = "Review Updated: " + reviewer.getFirstName() + " " + reviewer.getLastName() + " updated their review.";
+        String url = "/profile/" + reviewee.getUserId();
+
+        notificationService.sendNotification(reviewee.getUserId(), msg, url);
     }
 
-    //  RECALCULATE AVERAGE
+    //  RECALCULATE AVERAGE ---
     private void updateUserRating(User user) {
         List<Review> reviews = reviewRepository.findByRevieweeUserId(user.getUserId());
 

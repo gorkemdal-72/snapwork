@@ -41,8 +41,13 @@ public class JobService {
 
     // 1. CREATE JOB
     public Job createJob(JobRequest request) {
+        // 1. Find User
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        // 2. Find Employer Profile
+        EmployerProfile employer = employerProfileRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Employer profile not found! You must be an employer to post a job."));
 
         Job job = new Job();
         job.setTitle(request.getTitle());
@@ -55,12 +60,14 @@ public class JobService {
         job.setCity(request.getCity());
         job.setDistrict(request.getDistrict());
         job.setStreetAndBuilding(request.getStreetAndBuilding());
-        job.setStatus(JobStatus.OPEN);
+
+        // Assign Employer to Job
+        job.setEmployer(employer);
 
         Job savedJob = jobRepository.save(job);
 
+        // Save Custom Fields
         List<CustomFieldDTO> fieldDTOs = request.getCustomFields();
-
         if (fieldDTOs != null && !fieldDTOs.isEmpty()) {
             for (CustomFieldDTO fieldDTO : fieldDTOs) {
                 CustomField customField = new CustomField();
@@ -75,7 +82,6 @@ public class JobService {
         }
         return savedJob;
     }
-
 
     // 2. LIST ALL JOBS
     public List<Job> getAllJobs() {
@@ -110,7 +116,7 @@ public class JobService {
                 .orElseThrow(() -> new RuntimeException("Job not found!"));
     }
 
-    // 6. UPDATE JOB
+    // 6. UPDATE JOB (AND NOTIFY APPLICANTS)
     public Job updateJob(Long jobId, JobRequest request) {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found!"));
@@ -130,12 +136,24 @@ public class JobService {
         job.setDistrict(request.getDistrict());
         job.setStreetAndBuilding(request.getStreetAndBuilding());
 
-        return jobRepository.save(job);
+        Job savedJob = jobRepository.save(job);
+
+        // --- EKLENEN KISIM: Başvuranlara Bildirim Gönder ---
+        List<Application> applications = applicationRepository.findByJob(savedJob);
+        for (Application app : applications) {
+            String msg = "Update: The job '" + savedJob.getTitle() + "' you applied for has been updated by the employer.";
+            // İş detayına yönlendir
+            String url = "/jobs/" + savedJob.getJobId();
+
+            notificationService.sendNotification(app.getWorker().getUser().getUserId(), msg, url);
+        }
+        // ----------------------------------------------------
+
+        return savedJob;
     }
 
     // 7. MARK JOB AS COMPLETED
     public void completeJob(Long jobId, Long userId) {
-        // Ensure the user owns the job
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
@@ -143,13 +161,10 @@ public class JobService {
             throw new RuntimeException("Unauthorized: You do not own this job.");
         }
 
-        // Call the stored procedure to close the job
-        //STORED PROCEDURE
         jobRepository.completeJobManually(jobId);
     }
 
-
-    // 8. GET COMPLETED JOBS (Employer and  Worker)
+    // 8. GET COMPLETED JOBS
     public List<Job> getCompletedJobs(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
@@ -166,7 +181,6 @@ public class JobService {
         if (worker.isPresent()) {
             List<Application> applications = applicationRepository.findByWorker(worker.get());
             for (Application app : applications) {
-                // FIXED: Using Enum comparison instead of String
                 if (app.getStatus() == JobStatus.ACCEPTED && app.getJob().getStatus() == JobStatus.COMPLETED) {
                     completedJobs.add(app.getJob());
                 }
@@ -209,44 +223,34 @@ public class JobService {
 
     // 11. APPLY FOR JOB
     public void applyForJob(ApplyJobRequest request) {
-        // 1. Find Job
         Job job = jobRepository.findById(request.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found!"));
 
-        // 2. Find User
         User user = userRepository.findById(request.getWorkerId())
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        // 3. Find Worker Profile
         WorkerProfile worker = workerProfileRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("You must create a Worker Profile before applying!"));
 
-        // 4. Check if already applied
         boolean alreadyApplied = applicationRepository.existsByJobAndWorker(job, worker);
         if (alreadyApplied) {
             throw new RuntimeException("You have already applied for this job!");
         }
 
-        // 5. Check if employer is applying to own job
         if (job.getEmployer().getUser().getUserId().equals(request.getWorkerId())) {
             throw new RuntimeException("You cannot apply to your own job!");
         }
 
-        // 6. Create Application
         Application app = new Application();
         app.setJob(job);
         app.setWorker(worker);
-
         app.setStatus(JobStatus.PENDING);
-
         app.setCoverLetter(request.getCoverLetter());
-
-        // Set Proposed Price
         app.setProposedPrice(request.getProposedPrice());
 
         applicationRepository.save(app);
 
-        // 7. Send Notification to Employer
+        // Notify Employer
         String msg = "New application for '" + job.getTitle() + "': " + user.getFirstName() + " " + user.getLastName();
         if (request.getProposedPrice() != null) {
             msg += " (Offer: " + request.getProposedPrice() + " TL)";

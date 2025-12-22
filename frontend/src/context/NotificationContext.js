@@ -1,13 +1,16 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import NotificationService from '../services/NotificationService';
 
-export const NotificationContext = createContext();
+const NotificationContext = createContext();
+
+// Custom hook to use the context easily
+export const useNotification = () => useContext(NotificationContext);
 
 export const NotificationProvider = ({ children }) => {
     const [unreadCount, setUnreadCount] = useState(0);
     const user = JSON.parse(localStorage.getItem("user"));
 
-    // Bildirim sayısını sunucudan çek
+    // Fetch unread count from server
     const refreshNotifications = () => {
         if (user) {
             NotificationService.getUnreadCount(user.userId)
@@ -16,11 +19,10 @@ export const NotificationProvider = ({ children }) => {
         }
     };
 
-    // Uygulama ilk açıldığında kontrol et
     useEffect(() => {
         refreshNotifications();
 
-        // İstersen her 30 saniyede bir otomatik kontrol ekleyebilirsin:
+        // Optional: Auto-refresh every 30 seconds
         const interval = setInterval(refreshNotifications, 30000);
         return () => clearInterval(interval);
     }, []);

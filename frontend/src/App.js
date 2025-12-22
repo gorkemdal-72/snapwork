@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-// YENİ EKLENEN IMPORT
-import { NotificationProvider } from './context/NotificationContext';
+import { NotificationProvider, useNotification } from './context/NotificationContext';
 
 // --- PAGE IMPORTS ---
 import RegisterPage from "./pages/RegisterPage";
@@ -20,35 +19,11 @@ import JobDetailPage from "./pages/JobDetailPage";
 import EditProfilePage from "./pages/EditProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
 
-import NotificationService from "./services/NotificationService";
+// --- NAVIGATION COMPONENT ---
+const Navigation = ({ currentUser, role, handleLogout }) => {
 
-function App() {
-    const [currentUser, setCurrentUser] = useState(null);
-    const [role, setRole] = useState(null);
-    const [unreadCount, setUnreadCount] = useState(0);
+    const { unreadCount } = useNotification();
 
-    // Check user on load
-    useEffect(() => {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (user) {
-            setCurrentUser(user);
-            setRole(user.role);
-
-            // Fetch unread notification count
-            NotificationService.getUnreadCount(user.userId)
-                .then(res => setUnreadCount(res.data))
-                .catch(err => console.error("Notif Error:", err));
-        }
-    }, []);
-
-    // Logout function
-    const handleLogout = () => {
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-        window.location.href = "/login";
-    };
-
-    // --- BASIC / CLEAN STYLES ---
     const styles = {
         navbar: {
             backgroundColor: "#fff",
@@ -57,11 +32,11 @@ function App() {
             justifyContent: "space-between",
             alignItems: "center",
             padding: "0 20px",
-            borderBottom: "1px solid #ddd", // Simple border
+            borderBottom: "1px solid #ddd",
             fontFamily: "Arial, sans-serif"
         },
         logo: {
-            color: "#333", // Dark grey/Black
+            color: "#333",
             textDecoration: "none",
             fontSize: "1.4rem",
             fontWeight: "bold",
@@ -73,14 +48,10 @@ function App() {
             gap: "15px"
         },
         link: {
-            color: "#555", // Neutral grey
+            color: "#555",
             textDecoration: "none",
             fontSize: "0.95rem",
             transition: "color 0.2s"
-        },
-        activeLink: { // Optional: for active state logic if needed
-            color: "#000",
-            fontWeight: "bold"
         },
         buttonLink: {
             backgroundColor: "#eee",
@@ -92,7 +63,7 @@ function App() {
             border: "1px solid #ccc"
         },
         primaryButton: {
-            backgroundColor: "#333", // Black/Dark Grey
+            backgroundColor: "#333",
             color: "#fff",
             padding: "6px 14px",
             borderRadius: "4px",
@@ -102,7 +73,7 @@ function App() {
         },
         logoutButton: {
             background: "none",
-            border: "1px solid #d9534f", // Muted red border
+            border: "1px solid #d9534f",
             color: "#d9534f",
             padding: "4px 10px",
             borderRadius: "4px",
@@ -121,7 +92,7 @@ function App() {
             position: "absolute",
             top: "-6px",
             right: "-6px",
-            backgroundColor: "#d9534f", // Muted red
+            backgroundColor: "#d9534f",
             color: "white",
             borderRadius: "50%",
             width: "16px",
@@ -134,71 +105,96 @@ function App() {
     };
 
     return (
-        // DEĞİŞİKLİK BURADA: NotificationProvider TÜM UYGULAMAYI SARMALIYOR
+        <div style={styles.navbar}>
+            {/* LOGO */}
+            <Link to="/" style={styles.logo}>
+                SnapWork
+            </Link>
+
+            {/* MENU LINKS */}
+            <nav style={styles.navLinksContainer}>
+
+                {/* --- GUEST MENU --- */}
+                {!currentUser && (
+                    <>
+                        <Link to="/" style={styles.link}>Home</Link>
+                        <Link to="/login" style={styles.link}>Login</Link>
+                        <Link to="/register" style={styles.primaryButton}>Register</Link>
+                    </>
+                )}
+
+                {/* --- LOGGED IN USER MENU --- */}
+                {currentUser && (
+                    <>
+                        <Link to="/" style={styles.link}>Home</Link>
+
+                        <Link to="/notifications" style={styles.notificationBadge}>
+                            🔔
+                            {unreadCount > 0 && (
+                                <span style={styles.badgeCount}>{unreadCount}</span>
+                            )}
+                        </Link>
+
+                        {/* EMPLOYER MENU */}
+                        {role === "EMPLOYER" && (
+                            <>
+                                <Link to="/my-jobs" style={styles.link}>My Jobs</Link>
+                                <Link to="/completed-jobs" style={styles.link}>History</Link>
+                                <Link to="/create-job" style={styles.buttonLink}>
+                                    + Post Job
+                                </Link>
+                            </>
+                        )}
+
+                        {/* WORKER MENU */}
+                        {role === "WORKER" && (
+                            <>
+                                <Link to="/my-applications" style={styles.link}>My Applications</Link>
+                                <Link to="/completed-jobs" style={styles.link}>Job History</Link>
+                            </>
+                        )}
+
+                        {/* PROFILE & LOGOUT */}
+                        <Link to="/profile" style={styles.link}>Profile</Link>
+
+                        <button onClick={handleLogout} style={styles.logoutButton}>
+                            Logout
+                        </button>
+                    </>
+                )}
+            </nav>
+        </div>
+    );
+};
+
+// --- MAIN APP COMPONENT ---
+function App() {
+    const [currentUser, setCurrentUser] = useState(null);
+    const [role, setRole] = useState(null);
+
+    // Check user on load
+    useEffect(() => {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (user) {
+            setCurrentUser(user);
+            setRole(user.role);
+        }
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+    };
+
+    return (
         <NotificationProvider>
             <Router>
-                {/* --- NAVIGATION BAR --- */}
-                <div style={styles.navbar}>
-
-                    {/* LOGO */}
-                    <Link to="/" style={styles.logo}>
-                        SnapWork
-                    </Link>
-
-                    {/* MENU LINKS */}
-                    <nav style={styles.navLinksContainer}>
-
-                        {/* --- GUEST MENU --- */}
-                        {!currentUser && (
-                            <>
-                                <Link to="/" style={styles.link}>Home</Link>
-                                <Link to="/login" style={styles.link}>Login</Link>
-                                <Link to="/register" style={styles.primaryButton}>Register</Link>
-                            </>
-                        )}
-
-                        {/* --- LOGGED IN USER MENU --- */}
-                        {currentUser && (
-                            <>
-                                <Link to="/" style={styles.link}>Home</Link>
-
-                                {/* NOTIFICATIONS */}
-                                <Link to="/notifications" style={styles.notificationBadge}>
-                                    🔔
-                                    {unreadCount > 0 && (
-                                        <span style={styles.badgeCount}>{unreadCount}</span>
-                                    )}
-                                </Link>
-
-                                {/* EMPLOYER MENU */}
-                                {role === "EMPLOYER" && (
-                                    <>
-                                        <Link to="/my-jobs" style={styles.link}>My Jobs</Link>
-                                        <Link to="/completed-jobs" style={styles.link}>History</Link>
-                                        <Link to="/create-job" style={styles.buttonLink}>
-                                            + Post Job
-                                        </Link>
-                                    </>
-                                )}
-
-                                {/* WORKER MENU */}
-                                {role === "WORKER" && (
-                                    <>
-                                        <Link to="/my-applications" style={styles.link}>My Applications</Link>
-                                        <Link to="/completed-jobs" style={styles.link}>Job History</Link>
-                                    </>
-                                )}
-
-                                {/* PROFILE & LOGOUT */}
-                                <Link to="/profile" style={styles.link}>Profile</Link>
-
-                                <button onClick={handleLogout} style={styles.logoutButton}>
-                                    Logout
-                                </button>
-                            </>
-                        )}
-                    </nav>
-                </div>
+                <Navigation
+                    currentUser={currentUser}
+                    role={role}
+                    handleLogout={handleLogout}
+                />
 
                 {/* --- MAIN CONTENT AREA --- */}
                 <div style={{
@@ -206,7 +202,7 @@ function App() {
                     maxWidth: "1000px",
                     margin: "0 auto",
                     minHeight: "85vh",
-                    backgroundColor: "#fff" // Clean white background
+                    backgroundColor: "#fff"
                 }}>
                     <Routes>
                         <Route path="/" element={<HomePage />} />
