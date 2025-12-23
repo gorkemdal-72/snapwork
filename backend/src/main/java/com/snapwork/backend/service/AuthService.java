@@ -11,6 +11,8 @@ import com.snapwork.backend.repository.UserRepository;
 import com.snapwork.backend.repository.WorkerProfileRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class AuthService {
 
@@ -80,6 +82,10 @@ public class AuthService {
         if (!user.getPasswordHash().equals(request.getPassword())) {
             throw new RuntimeException("Wrong password! ");
         }
+
+        user.setLastLogin(LocalDateTime.now());
+        userRepository.save(user);
+
 
         String role = "NONE";
         if (employerRepository.existsByUser(user)) {
