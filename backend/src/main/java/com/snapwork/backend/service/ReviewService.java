@@ -16,7 +16,6 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final WorkerProfileRepository workerRepository;
     private final EmployerProfileRepository employerRepository;
-    // EKLENDİ: Bildirim servisi
     private final NotificationService notificationService;
 
     public ReviewService(ReviewRepository reviewRepository,
@@ -34,7 +33,6 @@ public class ReviewService {
     }
 
     // 1. CREATE REVIEW
-    // Creates a new review and sends a notification to the reviewee.
     public void createReview(ReviewRequest request) {
         // Check for duplicates
         if (reviewRepository.existsByJobJobIdAndReviewerUserId(request.getJobId(), request.getReviewerId())) {
@@ -62,9 +60,7 @@ public class ReviewService {
         // Update average rating for the reviewed user
         updateUserRating(reviewee);
 
-        // --- EKLENEN KISIM: Yorum yapılan kişiye bildirim gönder ---
         String msg = "New Review: " + reviewer.getFirstName() + " " + reviewer.getLastName() + " gave you " + request.getRating() + " stars.";
-        // Bildirime tıklayınca profiline gitsin
         String url = "/profile/" + reviewee.getUserId();
 
         notificationService.sendNotification(reviewee.getUserId(), msg, url);

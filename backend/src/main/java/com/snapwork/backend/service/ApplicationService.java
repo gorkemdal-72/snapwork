@@ -55,7 +55,7 @@ public class ApplicationService {
             throw new RuntimeException("You cannot apply to your own job!");
         }
 
-        // Check if already applied (Optional but recommended)
+        // Check if already applied
         if (applicationRepository.existsByJobAndWorker(job, worker)) {
             throw new RuntimeException("You have already applied for this job!");
         }
@@ -96,7 +96,6 @@ public class ApplicationService {
     }
 
     // 2. UPDATE STATUS (Accept/Reject)
-    // NOW WITH NOTIFICATION!
     public void updateApplicationStatus(Long applicationId, String status) {
         // 1. Find application
         Application app = applicationRepository.findById(applicationId)
@@ -113,8 +112,7 @@ public class ApplicationService {
         // 3. Save (Standard JPA update)
         applicationRepository.save(app);
 
-        // --- NOTIFICATION TRIGGER 2: Notify Worker (NEW) ---
-        // This part was missing! Now the worker gets notified.
+        // --- NOTIFICATION TRIGGER 2: Notify Worker
         String jobTitle = app.getJob().getTitle();
         String statusMessage = status.equalsIgnoreCase("ACCEPTED") ? "Accepted! 🎉" : "Rejected.";
 
