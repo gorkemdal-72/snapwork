@@ -64,7 +64,6 @@ public class ReviewService {
         String url = "/profile/" + reviewee.getUserId();
 
         notificationService.sendNotification(reviewee.getUserId(), msg, url);
-        // -----------------------------------------------------------
     }
 
     // 2. GET REVIEWS FOR A USER
@@ -109,7 +108,7 @@ public class ReviewService {
         List<Review> reviews = reviewRepository.findByRevieweeUserId(user.getUserId());
 
         if (reviews.isEmpty()) return;
-
+        int totalCount = reviews.size();
         double sum = 0.0;
         for (Review r : reviews) {
             sum += r.getRating();
@@ -122,6 +121,7 @@ public class ReviewService {
         if (employer.isPresent()) {
             EmployerProfile e = employer.get();
             e.setAvgRating(avg);
+            e.setTotalReviews(totalCount);
             employerRepository.saveAndFlush(e);
         }
 
@@ -130,6 +130,7 @@ public class ReviewService {
         if (worker.isPresent()) {
             WorkerProfile w = worker.get();
             w.setAvgRating(avg);
+            w.setTotalReviews(totalCount);
             workerRepository.saveAndFlush(w);
         }
     }
